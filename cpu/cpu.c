@@ -12,25 +12,48 @@
 #define D_ARG 1
 
 struct Cpu{
-	Stack *stk;		//stack
-	Stack *stk_ret;
-	double reg[4];  //reg array
-	int pc;
-	char *instr; 
+	Stack *stk;		//for calculations
+	Stack *stk_ret; //for return addresses
+	double reg[4]; 	//array of registers
+	int pc;			//program counter
+	char *instr; 	//array with instructions
 };
 typedef struct Cpu Cpu;
 
-int init_cpu(Cpu *cpu, const char *input, const char *log_stk);
+
+int init_cpu(Cpu *cpu, const char *input, const char *log_stk, const char *log_stk_ret);
 
 char *read_from_file(const char *input);
 
 int execute(Cpu *cpu);
 
-int init_cpu(Cpu *cpu, const char *input, const char *log_stk){
+void destroy_cpu(Cpu *cpu);
 
-	cpu->stk = stack_create("log_stk", "stk");
 
-	cpu->stk_ret = stack_create("log_stk_ret", "stk_ret");
+void destroy_cpu(Cpu *cpu){
+	
+	stack_destroy(cpu->stk);
+
+	stack_destroy(cpu->stk_ret);
+
+	free(cpu->instr);
+}
+
+int init_cpu(Cpu *cpu, const char *input, const char *log_stk, const char *log_stk_ret){
+
+	if(!input){
+		printf("Error: init_cpu: no file to execute!\n");
+		return 1;
+	}
+	
+	if(!cpu){
+		printf("Error: init_cpu: can't init cpu!\n");
+		return 1;
+	}
+
+	cpu->stk = stack_create(log_stk, "stk");
+
+	cpu->stk_ret = stack_create(log_stk_ret, "stk_ret");
 
 	for(int i = 0; i < 4; i++)
 		cpu->reg[i] = 0;
@@ -39,7 +62,8 @@ int init_cpu(Cpu *cpu, const char *input, const char *log_stk){
 
 	cpu->instr = read_from_file(input);
 
-	assert(cpu->instr);
+	if(!cpu->instr)
+		return 1;
 
 	return 0;
 
@@ -47,25 +71,39 @@ int init_cpu(Cpu *cpu, const char *input, const char *log_stk){
 
 char *read_from_file(const char *input){
 
-	long int nsym;
+	assert(input);
 
-	char * buffer = create_text_buffer(input, &nsym);
+	long int nsym = 0;
+
+	char *buffer = create_text_buffer(input, &nsym);
+
+	if(!buffer){
+		printf("Error: read_from_file: can't read from file!\n");
+		return NULL;
+	}
 
 	return buffer;
 }
 
 int execute(Cpu *cpu){
+
 	int stop = 0;
 	int i = 0;
+
 	while(!stop){
-				
+		
+		if(cpu->pc < 0){
+			printf("Error: execute: impossible pc!\n");
+			break;
+		}
+
 		printf("\n\npc = %d ",cpu->pc);
 
 		int instr = cpu->instr[cpu->pc++];
 		printf(" instr = %d ", instr);
 
 		int cntrl = 0;
-//		printf(" cntrl = %d ", cntrl);
+		printf(" cntrl = %d ", cntrl);
 
 		double tmp1 = 0;
 		double tmp2 = 0;
@@ -83,15 +121,23 @@ int execute(Cpu *cpu){
 				exit(-1);
 		}
 	}
+
+	if(!stop)
+		printf("Execution failed!\n");
+	else
+		printf("Executed successfully. Good luck!\n");
 }
 
 int main(){
 
 	Cpu cpu;
 
-	init_cpu(&cpu, "output.bin", "log.txt");
+	if(init_cpu(&cpu, "output.bin", "log.txt", "log_ret.txt"))
+		return 1;
 
 	execute(&cpu);
+
+	destroy_cpu(&cpu);
 
 	return 0;
 }

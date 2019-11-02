@@ -50,14 +50,45 @@ int init_transl_buffer(Transl_buf *cpu_instr);
 
 int look_for_label(char *line, Transl_buf *cpu_isntr);
 
+void clear_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf *cpu_instr);
 
+void clear_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf *cpu_instr){
+
+	free(lined_buffer);
+	
+	free(text_buffer);
+	
+	free(cpu_instr->buf);
+	
+}
+
+int read_from_file(const char *input, char *text_buffer, char **lined_buffer){
+
+	long int nsym = 0;
+
+	text_buffer = create_text_buffer(input, &nsym);
+	
+	if(!text_buffer){
+		printf("Can't read from file!\n");
+		return 1;
+	}
+
+	lined_buffer = create_arr_of_str2(text_buffer, nsym);
+	
+	if(!lined_buffer){
+		printf("Can't create lined buffer!\n");
+	}
+
+	return 0;
+
+}
 /** Checks the line if its a label or not. If there is a ':' in the line, then all letters and digits before ':' 
 * are considered as a label name. 
 * 
-* @note for recognising a label ':' should be placed just after the name of the label
+* @note For recognising a label ':' should be placed just after the name of the label
 *
-* @return if a label is found then we put it array of label with an appropriate address and 0 is returned. In other cases
-	non zero value is returned
+* @return If a label is found then we put it array of label with an appropriate address and 0 is returned. In other cases
+*	non zero value is returned
 */
 int look_for_label(char *line, Transl_buf *cpu_instr){
 	
@@ -140,7 +171,10 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 
 	return 0;
 }
-
+/**
+* Function initialiases struct Transl_buf: buffer size is set, and other filled with zeros
+*
+*/
 int init_transl_buffer(Transl_buf *cpu_instr){
 	
 	cpu_instr->buf = calloc(MAX_BUFFER_SIZE, sizeof(char));
@@ -163,6 +197,8 @@ int init_transl_buffer(Transl_buf *cpu_instr){
 
 			cpu_instr->labels[i].name[j] = '\0';
 		}
+
+		cpu_instr->labels[i].l_pc = -1;
 	}
 	return 0;
 }
@@ -192,23 +228,12 @@ int compile(const char *input, const char *output){
 
 	init_transl_buffer(&cpu_instr);
 
-//*****************************
-	long int nsym = 0;
+	char *text_buffer = NULL;
 
-	char *text_buffer = create_text_buffer(input, &nsym);
-	
-	if(!text_buffer){
-		printf("Can't read from file!\n");
-		return 1;
-	}
+	char **lined_buffer = NULL;
 
-	char **lined_buffer = create_arr_of_str2(text_buffer, nsym);
-	
-	if(!lined_buffer){
-		printf("Can't create lined buffer!\n");
-	}
+	read_from_file(input, text_buffer, lined_buffer);
 
-//******************************
 	fill_transl_buf(&cpu_instr, lined_buffer);
 
 	cpu_instr.pos = 0;
@@ -218,13 +243,10 @@ int compile(const char *input, const char *output){
 	FILE *file_out = fopen(output, "w");
 
 	fwrite(cpu_instr.buf, sizeof(char), cpu_instr.pos, file_out);
+
 	fclose(file_out);
 
-//****delete_transl_buf
-	free(lined_buffer);
-	free(text_buffer);
-
-	free(cpu_instr.buf);
+	clear_after_compilation(text_buffer, lined_buffer, &cpu_instr);
 
 	return 0;
 }
