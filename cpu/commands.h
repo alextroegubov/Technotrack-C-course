@@ -179,7 +179,7 @@ INSTR_DEF("je", 16, //tmp1 = tmp2
 
 
 
-INSTR_DEF("jbe", 15, //tmp1 > tmp2
+INSTR_DEF("jbe", 15, //tmp1 <= tmp2
 		cpu_instr->buf[cpu_instr->pos++] = 15;
 
 		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
@@ -194,7 +194,7 @@ INSTR_DEF("jbe", 15, //tmp1 > tmp2
 
 		stack_pop(cpu->stk, &tmp2);
 		
-		if(tmp1 >= tmp2)
+		if(tmp1 <= tmp2)
 			cpu->pc = *(int*)(cpu->instr + cpu->pc);
 		else
 			cpu->pc += sizeof(int);
@@ -202,7 +202,7 @@ INSTR_DEF("jbe", 15, //tmp1 > tmp2
 
 
 
-INSTR_DEF("jb", 14, //tmp1 > tmp2
+INSTR_DEF("jb", 14, //tmp1 < tmp2
 		cpu_instr->buf[cpu_instr->pos++] = 14;
 
 		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
@@ -225,7 +225,7 @@ INSTR_DEF("jb", 14, //tmp1 > tmp2
 
 
 
-INSTR_DEF("jae", 13, //tmp1 > tmp2
+INSTR_DEF("jae", 13, //tmp1 >= tmp2
 		cpu_instr->buf[cpu_instr->pos++] = 13;
 
 		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;

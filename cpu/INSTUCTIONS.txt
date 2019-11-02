@@ -1,0 +1,72 @@
+*****************************************************
+**********Instruction set for the assembler**********
+*****************************************************
+
+ designation used below:
+ 
+ tmp1 - the top value in stack
+ tmp2 - the second top value in stack
+ reg - one of the registers: rax, rbx, rcx, rdx
+ label - name of the label in code
+ double - any double number
+
+1. Simple arithmetic commands with double arguments:
+
+	1) takes two arguments from stack, calculates and pushes teh result in stack:
+		add		tmp1+tmp2
+		sub		tmp1 - tmp2 	
+		mul		tmp1 * tmp2
+		div		tmp1 / tmp2
+
+	2) takes one argument from stack and one from register, calculates and stores the result in the same register
+		add reg 	reg += tmp1
+		sub reg		reg -= tmp1
+		mul reg		reg *= tmp1
+		div reg		reg /= tmp1
+
+	3) incrementing/decrementing the top value in stack/register
+		inc
+		inc reg
+		dec
+		dec reg
+
+2. Branches:
+
+	1)Conditional branches: takes two arguments from stack and compare them in an appropriate way:
+		ja 	label	if tmp1 > tmp2 then jump
+		jb 	label	if tmp1 < tmp2 then jump
+		jae label   if tmp1 >= tmp2 then jump
+		jbe label   if tmp1 <= tmp2 then jump
+		je 	label   if tmp1 == tmp2 then jump
+		jne label   if tmp1 != tmp2 then jump
+
+	2) Unconditional branches:
+		jmp label	jumps to label
+
+3. Input/output/interaction with stack
+
+	1) writes a double number from stdin and pushes it
+		in
+
+	2) takes the top element in stack and prints it 
+		out
+
+	3) puts argument or register value at the top of the stack
+		push double
+		push reg
+
+	4) takes the top value from stack and puts in register/throws away
+		pop reg
+		pop
+	
+	5) finishes the program
+		end
+4. Complex arithmetic operations(soon):
+	sin
+	cos
+	sqrt
+	abs
+
+5. Using functions:
+	call label
+	ret
