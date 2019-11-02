@@ -1,0 +1,150 @@
+				________LOG FILE FOR STACK________
+
+stack_create:
+	allocated memory for stack
+	added log file to stack
+	stack_name = stk
+	errno = 100
+	canary1 = 2557891634
+	canary2 = 2882400018
+	size = 0
+
+stack_set_size:
+	data realloced
+	new capacity = 8
+	put first canary
+	put secong canary
+	elements of stack from 0 to 7 are set in poison value
+	allocated memory for data in stack
+	errno = 0
+
+stack_hash:
+	hash = -17832
+
+stack_ok:
+
+stack_hash:
+	hash = -17832
+	stack_ok: no errors detected
+	stack is successfully created
+
+
+stack_ok:
+
+stack_hash:
+	hash = -17832
+	stack_ok: no errors detected
+
+stack_push:
+	pushed 1 
+	size = 1
+
+stack_hash:
+	hash = -17951
+
+stack_ok:
+
+stack_hash:
+	hash = -17951
+	stack_ok: no errors detected
+
+stack_ok:
+
+stack_hash:
+	hash = -17951
+	stack_ok: no errors detected
+
+stack_push:
+	pushed 6 
+	size = 2
+
+stack_hash:
+	hash = -18082
+
+stack_ok:
+
+stack_hash:
+	hash = -18082
+	stack_ok: no errors detected
+
+stack_ok:
+
+stack_hash:
+	hash = -18082
+	stack_ok: no errors detected
+
+stack_push:
+	pushed 10 
+	size = 3
+
+stack_hash:
+	hash = -18201
+
+stack_ok:
+
+stack_hash:
+	hash = -18201
+	stack_ok: no errors detected
+
+stack_ok:
+
+stack_hash:
+	hash = -18201
+	stack_ok: no errors detected
+
+stack_clear:
+	stack filled in with poison values
+	size = 0
+
+stack_hash:
+	hash = -17832
+
+stack_ok:
+
+stack_hash:
+	hash = -17832
+	stack_ok: no errors detected
+	stack successfully cleared
+
+stack_ok:
+
+stack_hash:
+	hash = -17832
+	stack_ok: no errors detected
+
+stack_ok:
+
+stack_hash:
+	hash = -17832
+	stack_ok: no errors detected
+
+stack_pop:
+
+stack_ok:
+					 STACK_DUMP:
+Stack "stk" [0x5244e30]  (ERROR!!!)
+{
+	 canary1 = 2557891634
+	 size = 0
+	 capacity = 8
+	 data[8 elem.] = [0x5244eb0]
+		 data_canary1 = 2878142887
+		   [0] = -999    (POISON?) 
+		   [1] = -999    (POISON?) 
+		   [2] = -999    (POISON?) 
+		   [3] = -999    (POISON?) 
+		   [4] = -999    (POISON?) 
+		   [5] = -999    (POISON?) 
+		   [6] = -999    (POISON?) 
+		   [7] = -999    (POISON?) 
+		 data_canary2 = 2878142887
+	 canary2 = 2882400018
+
+	 hash = -17832
+	 errno = UNDERFLOW_ERR: can't pop an element, stack is empty
+
+}
+stack_dump: finished
+
+
+stack_destroy:
