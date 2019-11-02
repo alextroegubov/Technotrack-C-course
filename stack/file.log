@@ -19,12 +19,12 @@ stack_set_size:
 	errno = 0
 
 stack_hash:
-	hash = -17832
+	hash = -5010
 
 stack_ok:
 
 stack_hash:
-	hash = -17832
+	hash = -5010
 	stack_ok: no errors detected
 	stack is successfully created
 
@@ -32,7 +32,7 @@ stack_hash:
 stack_ok:
 
 stack_hash:
-	hash = -17832
+	hash = -5010
 	stack_ok: no errors detected
 
 stack_push:
@@ -40,18 +40,18 @@ stack_push:
 	size = 1
 
 stack_hash:
-	hash = -17951
+	hash = -5129
 
 stack_ok:
 
 stack_hash:
-	hash = -17951
+	hash = -5129
 	stack_ok: no errors detected
 
 stack_ok:
 
 stack_hash:
-	hash = -17951
+	hash = -5129
 	stack_ok: no errors detected
 
 stack_push:
@@ -59,18 +59,18 @@ stack_push:
 	size = 2
 
 stack_hash:
-	hash = -18082
+	hash = -5260
 
 stack_ok:
 
 stack_hash:
-	hash = -18082
+	hash = -5260
 	stack_ok: no errors detected
 
 stack_ok:
 
 stack_hash:
-	hash = -18082
+	hash = -5260
 	stack_ok: no errors detected
 
 stack_push:
@@ -78,18 +78,18 @@ stack_push:
 	size = 3
 
 stack_hash:
-	hash = -18201
+	hash = -5379
 
 stack_ok:
 
 stack_hash:
-	hash = -18201
+	hash = -5379
 	stack_ok: no errors detected
 
 stack_ok:
 
 stack_hash:
-	hash = -18201
+	hash = -5379
 	stack_ok: no errors detected
 
 stack_clear:
@@ -97,37 +97,37 @@ stack_clear:
 	size = 0
 
 stack_hash:
-	hash = -17832
+	hash = -5010
 
 stack_ok:
 
 stack_hash:
-	hash = -17832
+	hash = -5010
 	stack_ok: no errors detected
 	stack successfully cleared
 
 stack_ok:
 
 stack_hash:
-	hash = -17832
+	hash = -5010
 	stack_ok: no errors detected
 
 stack_ok:
 
 stack_hash:
-	hash = -17832
+	hash = -5010
 	stack_ok: no errors detected
 
 stack_pop:
 
 stack_ok:
 					 STACK_DUMP:
-Stack "stk" [0x5244e30]  (ERROR!!!)
+Stack "stk" [0x55ae75ae5ff0]  (ERROR!!!)
 {
 	 canary1 = 2557891634
 	 size = 0
 	 capacity = 8
-	 data[8 elem.] = [0x5244eb0]
+	 data[8 elem.] = [0x55ae75ae5900]
 		 data_canary1 = 2878142887
 		   [0] = -999    (POISON?) 
 		   [1] = -999    (POISON?) 
@@ -140,7 +140,7 @@ Stack "stk" [0x5244e30]  (ERROR!!!)
 		 data_canary2 = 2878142887
 	 canary2 = 2882400018
 
-	 hash = -17832
+	 hash = -5010
 	 errno = UNDERFLOW_ERR: can't pop an element, stack is empty
 
 }

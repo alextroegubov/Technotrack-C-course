@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "stack1.c"
+#include "stack.h"
 
 #define unit_test(number, res, exp) \
 									if ((res) != exp) \
