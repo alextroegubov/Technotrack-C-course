@@ -33,10 +33,16 @@ void destroy_cpu(Cpu *cpu);
 void destroy_cpu(Cpu *cpu){
 	
 	stack_destroy(cpu->stk);
+	
+	cpu->stk = NULL;
 
 	stack_destroy(cpu->stk_ret);
 
+	cpu->stk_ret = NULL;
+
 	free(cpu->instr);
+
+	cpu->instr = NULL;
 }
 
 int init_cpu(Cpu *cpu, const char *input, const char *log_stk, const char *log_stk_ret){
@@ -87,6 +93,8 @@ char *read_from_file(const char *input){
 
 int execute(Cpu *cpu){
 
+	assert(cpu);
+
 	int stop = 0;
 	int i = 0;
 
@@ -117,15 +125,19 @@ int execute(Cpu *cpu){
 
 			#include "commands.h"
 			default:
-				printf("unknown instr: %d!\n", instr);
-				exit(-1);
+				printf("unknown instr!\n");
+				break;
 		}
 	}
 
-	if(!stop)
+	if(!stop){
 		printf("Execution failed!\n");
-	else
+		return 1;
+	}
+	else{
 		printf("Executed successfully. Good luck!\n");
+		return 0;
+	}
 }
 
 int main(){

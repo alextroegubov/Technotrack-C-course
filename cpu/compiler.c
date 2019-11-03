@@ -4,12 +4,12 @@
 #include<stdio.h>
 #include<string.h>
 
-#define MAX_COMMAND_SIZE_SYM 8	
-#define MAX_LINE_SIZE 100
-#define MAX_NUMBER_OF_LABELS 50
-#define MAX_BUFFER_SIZE 2000
-#define MAX_LABEL_LENGTH 30
-#define MAX_ARG_SIZE 30
+#define MAX_COMMAND_SIZE_SYM 8	//max size of instruction in symbols
+#define MAX_LINE_SIZE 100 		//max size of line in code
+#define MAX_NUMBER_OF_LABELS 50	//max number of label in code
+#define MAX_BUFFER_SIZE 2000	//buffer where translated instructions are stored
+#define MAX_LABEL_LENGTH 30		//max length of label's name
+#define MAX_ARG_SIZE 30			//max size of argument in symbols
 
 #define INSTR_SZ 1
 #define CNTRL_SZ 1
@@ -20,7 +20,8 @@
 #define D_ARG 1
 #define LAB_ARG 3
 
-//typical command: instr+cntrl+arg
+//typical command: 	instr + (cntrl) + (arg)
+//					 1 byte	 1 byte   1-8 bytes 
 
 struct _label{
 	char name[MAX_LABEL_LENGTH];
@@ -51,22 +52,28 @@ int init_transl_buffer(Transl_buf *cpu_instr);
 
 int look_for_label(char *line, Transl_buf *cpu_isntr);
 
-void clean_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf *cpu_instr);
+void clean_after_compilation(char *text_buffer, char **lined_buffer, char **without_empty_lines, Transl_buf *cpu_instr);
 
-int read_from_file(const char *input, char **text_buffer, char ***lined_buffer);
+int read_from_file(const char *input, char **text_buffer, char ***lined_buffer, char ***without_empty_lines);
 
-
-void clean_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf *cpu_instr){
+/** 
+* @brief frees all memory allocated during the compilation
+*/
+void clean_after_compilation(char *text_buffer, char **lined_buffer, char **without_empty_lines, Transl_buf *cpu_instr){
 
 	free(lined_buffer);
+
+	free(without_empty_lines);
 	
 	free(text_buffer);
 	
 	free(cpu_instr->buf);
-	
 }
 
-int read_from_file(const char *input, char **text_buffer, char ***lined_buffer){
+/** 
+* @brief responsible for reading commands from file and separating them into lines
+*/
+int read_from_file(const char *input, char **text_buffer, char ***lined_buffer, char ***without_empty_lines){
 
 	long int nsym = 0;
 
@@ -79,6 +86,10 @@ int read_from_file(const char *input, char **text_buffer, char ***lined_buffer){
 
 	*lined_buffer = create_arr_of_str2(*text_buffer, nsym);
 	
+	long int nlines = 0;
+
+	*without_empty_lines = create_buffer_without_empty_lines(*lined_buffer, &nlines);
+
 	if(!lined_buffer){
 		printf("Can't create lined buffer!\n");
 	}
@@ -86,6 +97,7 @@ int read_from_file(const char *input, char **text_buffer, char ***lined_buffer){
 	return 0;
 
 }
+
 /** Checks the line if its a label or not. If there is a ':' in the line, then all letters and digits before ':' 
 * are considered as a label name. 
 * 
@@ -99,12 +111,12 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 	assert(line);
 	assert(cpu_instr);
 
-	printf("looking for label:\n");
+//	printf("looking for label:\n");
 	int pos1 = 0;
 	int pos2 = 0;
 
 	if(strchr(line, ':')){
- 		printf("found: \n");
+// 		printf("found: \n");
 		pos2 = strchr(line, ':') - line;
 		
 		for(pos1 = pos2 - 1; (pos1 >= 0) && isalnum(line[pos1]); pos1--)
@@ -113,7 +125,7 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 		pos1++;
 
 
-		printf("\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
+//		printf("\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
 
 		if(pos1 == pos2){
 			printf(	"Compilation error!\n"
@@ -126,9 +138,9 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 		cpu_instr->labels[cpu_instr->label_pos].l_pc = cpu_instr->pos; //put address
 
 	
-		printf("\tlabel: %s\n"
-				"\taddr: %d\n", cpu_instr->labels[cpu_instr->label_pos].name, 
-				cpu_instr->labels[cpu_instr->label_pos].l_pc);
+//		printf("\tlabel: %s\n"
+//				"\taddr: %d\n", cpu_instr->labels[cpu_instr->label_pos].name, 
+//				cpu_instr->labels[cpu_instr->label_pos].l_pc);
 
 		cpu_instr->label_pos++;
 
@@ -162,7 +174,7 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 	/*put instr in instr_buf*/
 	strncpy(instr_buf,(const char*) line + pos1, pos2 - pos1);
 
-	printf("got intstruction: %s\n", instr_buf);
+//	printf("got intstruction: %s\n", instr_buf);
 	
 	/*deleting white spaces*/
 	while(isspace(line[pos2]))
@@ -174,12 +186,12 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 	/*put argument in com_buf*/
 	strncpy(arg_buf, (const char*)line + pos2, pos1 - pos2);
 	
-	printf("got argument: %s.\n", arg_buf);
+//	printf("got argument: %s.\n", arg_buf);
 
 	return 0;
 }
 /**
-* Function initialiases struct Transl_buf: buffer size is set, and other filled with zeros
+* Function initialises struct Transl_buf with init values
 *
 */
 int init_transl_buffer(Transl_buf *cpu_instr){
@@ -244,13 +256,15 @@ int compile(const char *input, const char *output){
 
 	char **lined_buffer = NULL;
 
-	read_from_file(input, &text_buffer, &lined_buffer);
+	char **without_empty_lines = NULL;
 
-	fill_transl_buf(&cpu_instr, lined_buffer);
+	read_from_file(input, &text_buffer, &lined_buffer, &without_empty_lines);
+
+	fill_transl_buf(&cpu_instr, without_empty_lines);
 
 	cpu_instr.pos = 0;
 
-	fill_transl_buf(&cpu_instr, lined_buffer);	
+	fill_transl_buf(&cpu_instr, without_empty_lines);	
 	
 	FILE *file_out = fopen(output, "w");
 
@@ -258,7 +272,7 @@ int compile(const char *input, const char *output){
 
 	fclose(file_out);
 
-	clean_after_compilation(text_buffer, lined_buffer, &cpu_instr);
+	clean_after_compilation(text_buffer, lined_buffer, without_empty_lines, &cpu_instr);
 
 	return 0;
 }
@@ -274,11 +288,11 @@ int fill_transl_buf(Transl_buf *cpu_instr, char **lined_buffer){
 	assert(lined_buffer);
 
 	for(int i = 0; lined_buffer[i]; i++){
-		printf("\n\ntranslating %d line: ....\n", i);
+//		printf("\n\ntranslating %d line: ....\n", i);
 
 		translate_line(lined_buffer[i], cpu_instr);
 
-		printf("%d line has been translated\n", i);
+//		printf("%d line has been translated\n", i);
 	}
 
 	return 0;
@@ -293,7 +307,7 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 	/*getting local copy of line*/
 	char line[MAX_LINE_SIZE] = {'\0'};
 
-	if(strlen(_line) < 100){
+	if(strlen(_line) < MAX_LINE_SIZE){
 		strcpy(line, _line);
 	}
 	else{
@@ -305,21 +319,24 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 	if(strchr(line, ';')){
 		*strchr(line, ';') = '\0';
 	}
-
+	
+	/*checking the line for label*/
 	if(!look_for_label(line, cpu_instr)){
-		printf("found label\n");
+//		printf("found label\n");
 		return 0;
 	}
 
-	char instr_buf[MAX_COMMAND_SIZE_SYM + 1] = {'\0'}; //buffer for command
+	/*buffer for an instruction*/
+	char instr_buf[MAX_COMMAND_SIZE_SYM + 1] = {'\0'};
 
-	char arg_buf[MAX_ARG_SIZE] = {'\0'}; //buffer for argument
+	/*buffer for an argument*/
+	char arg_buf[MAX_ARG_SIZE] = {'\0'};
 
 	fill_buffers(line, instr_buf, arg_buf);
 
-	int arg_check = define_argument(arg_buf);
+	int arg_type = define_argument(arg_buf);
 
-//	printf("arg_check = %d\n", arg_check);
+//	printf("arg_type = %d\n", arg_type);
 
 	#define INSTR_DEF(name, num, code_comp, code_cpu) \
 		if(!strcmp(name, instr_buf)){ \
@@ -328,28 +345,28 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 		} \
 
 	#include "commands.h"
-
-	printf(	"Compilation error: undefined instuction:\n"
-			"%s\n", instr_buf);
+	
+	if(!strcmp(instr_buf, ""))
+		printf(	"Compilation error: undefined instuction:\n %s\n", instr_buf);
 
 	return 0;
 }
 
 int find_label(char *arg, Transl_buf *cpu_instr){
 
-	printf("finding label....\n");
+//	printf("finding label....\n");
 
 	for(int i = 0; i < cpu_instr->label_pos; i++){
 
 		if(!strcmp(arg, cpu_instr->labels[i].name)){
 
-			printf("found: %s\n", cpu_instr->labels[i].name);
+//			printf("found: %s\n", cpu_instr->labels[i].name);
 
 			return cpu_instr->labels[i].l_pc;
 		}
 
 	}
-	printf("Not found\n");
+//	printf("Not found\n");
 
 	return -1;
 }

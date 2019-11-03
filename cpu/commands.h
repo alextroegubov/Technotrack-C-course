@@ -9,7 +9,7 @@
 						2 - reg argument(char in arg) 
 		argument in arg_buf
 
-		arg_check:
+		arg_type:
 						number of reg: if we have reg arg- pop&push
 						< 0: if we have double(push) or no argument(pop)
 
@@ -32,8 +32,7 @@
 #define NO_ARG 0
 #define REG_ARG 2
 #define D_ARG 1
-#define LAB_ARG 3//int in arg  	-| for jumping
-#define ADR_ARG 4 				-|
+#define LAB_ARG 3
 */
 
 
@@ -45,21 +44,22 @@ INSTR_DEF("ret", 21,
 
 		cpu->pc = (int)tmp1;
 
-		printf("returned to %d", cpu->pc);
-);
+//		printf("returned to %d", cpu->pc);
+);	
 
 INSTR_DEF("call", 20,
 		cpu_instr->buf[cpu_instr->pos++] = 20;
+		
+		/*writing pc for back jump*/
+		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
-		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr); //writing pc at what we will jump
-
-		printf("call: pc = %d\n", *(int*)(cpu_instr->buf + cpu_instr->pos));
+//		printf("call: pc = %d\n", *(int*)(cpu_instr->buf + cpu_instr->pos));
 
 		cpu_instr->pos += sizeof(int);
 	,
 
-		printf("call to %d taken\n"
-				"saved %ld\n",  *(int*)(cpu->instr + cpu->pc), cpu->pc + sizeof(int));
+//		printf("call to %d taken\n"
+//				"saved %ld\n",  *(int*)(cpu->instr + cpu->pc), cpu->pc + sizeof(int));
 
 		stack_push(cpu->stk_ret, cpu->pc + sizeof(int));
 
@@ -68,11 +68,11 @@ INSTR_DEF("call", 20,
 
 
 
-INSTR_DEF("dec", 19, //reg--
+INSTR_DEF("dec", 19,
 
 		cpu_instr->buf[cpu_instr->pos++] = 19;
 
-		if(arg_check < 0){
+		if(arg_type < 0){
 
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
@@ -80,7 +80,7 @@ INSTR_DEF("dec", 19, //reg--
 
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 
-			cpu_instr->buf[cpu_instr->pos++] = arg_check;
+			cpu_instr->buf[cpu_instr->pos++] = arg_type;
 		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -100,18 +100,18 @@ INSTR_DEF("dec", 19, //reg--
 		}
 );
 
-INSTR_DEF("inc", 18, //reg++
+INSTR_DEF("inc", 18,
 
 		cpu_instr->buf[cpu_instr->pos++] = 18;
 
-		if(arg_check < 0){
+		if(arg_type < 0){
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
 		else {
 
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 
-			cpu_instr->buf[cpu_instr->pos++] = arg_check;
+			cpu_instr->buf[cpu_instr->pos++] = arg_type;
 		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -306,7 +306,7 @@ INSTR_DEF("push", 9, //takes reg or number
 
 		cpu_instr->buf[cpu_instr->pos++] = 9;
 
-		if(arg_check < 0){
+		if(arg_type < 0){
 			/*has double in arg_buf*/
 
 			printf("double!\n");
@@ -318,11 +318,11 @@ INSTR_DEF("push", 9, //takes reg or number
 			cpu_instr->pos += sizeof(double);
 		}
 		else{
-			/*has number of reg in arg_check*/
+			/*has number of reg in arg_type*/
 
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 
-			cpu_instr->buf[cpu_instr->pos++] = arg_check;
+			cpu_instr->buf[cpu_instr->pos++] = arg_type;
 		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -344,17 +344,17 @@ INSTR_DEF("pop", 8, //takes reg or number,
 
 		cpu_instr->buf[cpu_instr->pos++] = 8;
 
-		if(arg_check < 0){
+		if(arg_type < 0){
 			/*has no argument*/
 
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
 		else{
-			/*has number of reg in arg_check*/
+			/*has number of reg in arg_type*/
 
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG; //reg
 
-			cpu_instr->buf[cpu_instr->pos++] = (char)arg_check;
+			cpu_instr->buf[cpu_instr->pos++] = (char)arg_type;
 		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -374,14 +374,14 @@ INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
 		
 		cpu_instr->buf[cpu_instr->pos++] = 1;
 
-		if(arg_check < 0){
+		if(arg_type < 0){
 		
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
 		else {
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 			
-			cpu_instr->buf[cpu_instr->pos++] = arg_check;
+			cpu_instr->buf[cpu_instr->pos++] = arg_type;
 		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -408,14 +408,14 @@ INSTR_DEF("sub", 2, //takes no args, 2 b, tmp1 - tmp2
 	
 		cpu_instr->buf[cpu_instr->pos++] = 2;
 
-		if(arg_check < 0){
+		if(arg_type < 0){
 		
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
 		else {
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 			
-			cpu_instr->buf[cpu_instr->pos++] = arg_check;
+			cpu_instr->buf[cpu_instr->pos++] = arg_type;
 		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -442,14 +442,14 @@ INSTR_DEF("mul", 3, //takes no args, 2 b, tmp2 * tmp1
 	
 		cpu_instr->buf[cpu_instr->pos++] = 3;
 
-		if(arg_check < 0){
+		if(arg_type < 0){
 		
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
 		else {
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 			
-			cpu_instr->buf[cpu_instr->pos++] = arg_check;
+			cpu_instr->buf[cpu_instr->pos++] = arg_type;
 		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -476,14 +476,14 @@ INSTR_DEF("div", 4, //takes no args, 2 b, tmp1 / tmp2
 
 		cpu_instr->buf[cpu_instr->pos++] = 4;
 
-		if(arg_check < 0){
+		if(arg_type < 0){
 		
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
 		else {
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 			
-			cpu_instr->buf[cpu_instr->pos++] = arg_check;
+			cpu_instr->buf[cpu_instr->pos++] = arg_type;
 		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
