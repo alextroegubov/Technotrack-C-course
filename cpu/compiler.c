@@ -9,6 +9,7 @@
 #define MAX_NUMBER_OF_LABELS 50
 #define MAX_BUFFER_SIZE 2000
 #define MAX_LABEL_LENGTH 30
+#define MAX_ARG_SIZE 30
 
 #define INSTR_SZ 1
 #define CNTRL_SZ 1
@@ -50,9 +51,12 @@ int init_transl_buffer(Transl_buf *cpu_instr);
 
 int look_for_label(char *line, Transl_buf *cpu_isntr);
 
-void clear_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf *cpu_instr);
+void clean_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf *cpu_instr);
 
-void clear_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf *cpu_instr){
+int read_from_file(const char *input, char **text_buffer, char ***lined_buffer);
+
+
+void clean_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf *cpu_instr){
 
 	free(lined_buffer);
 	
@@ -62,18 +66,18 @@ void clear_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf 
 	
 }
 
-int read_from_file(const char *input, char *text_buffer, char **lined_buffer){
+int read_from_file(const char *input, char **text_buffer, char ***lined_buffer){
 
 	long int nsym = 0;
 
-	text_buffer = create_text_buffer(input, &nsym);
+	*text_buffer = create_text_buffer(input, &nsym);
 	
 	if(!text_buffer){
 		printf("Can't read from file!\n");
 		return 1;
 	}
 
-	lined_buffer = create_arr_of_str2(text_buffer, nsym);
+	*lined_buffer = create_arr_of_str2(*text_buffer, nsym);
 	
 	if(!lined_buffer){
 		printf("Can't create lined buffer!\n");
@@ -95,18 +99,21 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 	assert(line);
 	assert(cpu_instr);
 
-//	printf("looking for label:\n");
+	printf("looking for label:\n");
 	int pos1 = 0;
 	int pos2 = 0;
 
 	if(strchr(line, ':')){
-//		printf("found:\n");
+ 		printf("found: \n");
 		pos2 = strchr(line, ':') - line;
 		
-		for(pos1 = pos2 - 1; (pos1 > 0) && isalnum(line[pos1]); pos1--)
+		for(pos1 = pos2 - 1; (pos1 >= 0) && isalnum(line[pos1]); pos1--)
 			;
 
-//		printf("pos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
+		pos1++;
+
+
+		printf("\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
 
 		if(pos1 == pos2){
 			printf(	"Compilation error!\n"
@@ -119,10 +126,10 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 		cpu_instr->labels[cpu_instr->label_pos].l_pc = cpu_instr->pos; //put address
 
 	
-//		printf("label: %s\n"
-				"addr: %d\n", cpu_instr->labels[cpu_instr->label_pos].name, 
-				cpu_instr->labels[cpu_instr->label_pos].l_pc;
-//
+		printf("\tlabel: %s\n"
+				"\taddr: %d\n", cpu_instr->labels[cpu_instr->label_pos].name, 
+				cpu_instr->labels[cpu_instr->label_pos].l_pc);
+
 		cpu_instr->label_pos++;
 
 		return 0;
@@ -167,7 +174,7 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 	/*put argument in com_buf*/
 	strncpy(arg_buf, (const char*)line + pos2, pos1 - pos2);
 	
-	printf("got argument:%s.\n", arg_buf);
+	printf("got argument: %s.\n", arg_buf);
 
 	return 0;
 }
@@ -177,6 +184,8 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 */
 int init_transl_buffer(Transl_buf *cpu_instr){
 	
+	assert(cpu_instr);
+
 	cpu_instr->buf = calloc(MAX_BUFFER_SIZE, sizeof(char));
 
 	if(!cpu_instr->buf){
@@ -226,27 +235,30 @@ int compile(const char *input, const char *output){
 
 	Transl_buf cpu_instr;
 
-	init_transl_buffer(&cpu_instr);
+	if(init_transl_buffer(&cpu_instr)){
+		printf("Error: compile: Can't init transl_buffer!\n");
+		return 1;
+	}
 
 	char *text_buffer = NULL;
 
 	char **lined_buffer = NULL;
 
-	read_from_file(input, text_buffer, lined_buffer);
+	read_from_file(input, &text_buffer, &lined_buffer);
 
 	fill_transl_buf(&cpu_instr, lined_buffer);
 
 	cpu_instr.pos = 0;
 
-	fill_transl_buf(&cpu_instr, lined_buffer);
-
+	fill_transl_buf(&cpu_instr, lined_buffer);	
+	
 	FILE *file_out = fopen(output, "w");
 
 	fwrite(cpu_instr.buf, sizeof(char), cpu_instr.pos, file_out);
 
 	fclose(file_out);
 
-	clear_after_compilation(text_buffer, lined_buffer, &cpu_instr);
+	clean_after_compilation(text_buffer, lined_buffer, &cpu_instr);
 
 	return 0;
 }
@@ -256,6 +268,10 @@ int compile(const char *input, const char *output){
 * 
 */
 int fill_transl_buf(Transl_buf *cpu_instr, char **lined_buffer){
+
+	assert(cpu_instr);
+
+	assert(lined_buffer);
 
 	for(int i = 0; lined_buffer[i]; i++){
 		printf("\n\ntranslating %d line: ....\n", i);
@@ -290,15 +306,14 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 		*strchr(line, ';') = '\0';
 	}
 
-	if(!look_for_label(line, cpu_instr)) //found
+	if(!look_for_label(line, cpu_instr)){
+		printf("found label\n");
 		return 0;
-
-	int pos1 = 0;
-	int pos2 = 0;
+	}
 
 	char instr_buf[MAX_COMMAND_SIZE_SYM + 1] = {'\0'}; //buffer for command
 
-	char arg_buf[sizeof(double) + 1] = {'\0'}; //buffer for argument
+	char arg_buf[MAX_ARG_SIZE] = {'\0'}; //buffer for argument
 
 	fill_buffers(line, instr_buf, arg_buf);
 
@@ -317,6 +332,7 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 	printf(	"Compilation error: undefined instuction:\n"
 			"%s\n", instr_buf);
 
+	return 0;
 }
 
 int find_label(char *arg, Transl_buf *cpu_instr){
