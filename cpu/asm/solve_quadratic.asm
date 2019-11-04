@@ -1,6 +1,6 @@
 const_string: no_roots 'no roots'
 const_string: one_root 'one root'
-const_string: inf_root 'infinite number of roots'
+const_string: inf_roots 'infinite number of roots'
 const_string: two_real 'two real roots'
 const_string: two_complex 'two complex'
 const_string: matching 'matching roots'
@@ -31,7 +31,7 @@ print one_root
 out
 end
 
-inf_of_no:
+inf_or_no:
 	push 0
 	push rcx
 	je inf_roots
@@ -69,7 +69,7 @@ solve_quadratic:
 	push -1
 	mul rdx ; D -> -D
 
-	print two complex
+	print two_complex
 	;;;;;;;;;
 	;;;;;;;;;
 	;;;;;;;;;
@@ -81,7 +81,7 @@ solve_quadratic:
 two_real:
 	print two_real
 	push 2
-	push a
+	push rax
 	mul
 	
 	push rdx
@@ -95,7 +95,7 @@ two_real:
 	out ;first root
 
 	push 2
-	push a
+	push rax
 	mul
 	
 	push rdx

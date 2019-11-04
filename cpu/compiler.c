@@ -23,8 +23,11 @@
 #define D_ARG 1
 #define LAB_ARG 3
 
-//typical command: 	instr + (cntrl) + (arg)
-//					 1 byte	 1 byte   1-8 bytes 
+/*typical command: 	instr + (cntrl) + (arg)
+					 1 byte	 1 byte   1-8 bytes 
+*/
+
+//#define DEBUG
 
 struct _label{
 	char name[MAX_LABEL_LENGTH];
@@ -69,51 +72,63 @@ int read_from_file(const char *input, char **text_buffer, char ***lined_buffer, 
 
 char *find_const_string(Transl_buf *cpu_instr, char *arg_buf, int *len);
 
+/********************************************************/
+
 char *find_const_string(Transl_buf *cpu_instr, char *arg_buf, int *len){
+
+#ifdef DEBUG
+	assert(cpu_instr);
+	assert(arg_buf);
+	assert(len);
+
 	printf("findigng string...\n");
+#endif
 
 	for(int i = 0; i < cpu_instr->string_pos; i++){
+
 		if(!strcmp(arg_buf, cpu_instr->strings[i].name)){
+
+		#ifdef DEBUG
 			printf("found: %s\n", cpu_instr->strings[i].name);
-			//including term sym
+		#endif
 			*len = strlen(cpu_instr->strings[i].value) + 1;
+
 			return cpu_instr->strings[i].value;
 		}
 	}
-
-	printf("not found\n");
-
 	return NULL;
 }
 
 
 int look_for_const_string(char *line, Transl_buf *cpu_instr){
-	
+
+#ifdef DEBUG
 	assert(line);
 	assert(cpu_instr);
 
 	printf("looking for const_string:\n");
-	printf("line = %s\n", line);
+#endif	
 	int pos1 = 0;
 	int pos2 = 0;
 
 	if(strstr(line, "const_string:")){
 
+#ifdef DEBUG
  		printf("found: \n");
-
+#endif
 		pos1 = strchr(line, ':') - line + 1;
 
 		while(isspace(line[pos1]))
 			pos1++;
 		
-		for(pos2 = pos1; isalnum(line[pos2]); pos2++)
+		for(pos2 = pos1; isgraph(line[pos2]); pos2++)
 			;
-
+#ifdef DEBUG
 		printf("\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
-
+#endif
 		if(pos1 == pos2){
 			printf(	"Compilation error!\n"
-					"Can't identify label: %s\n", line);
+					"Can't identify const string: %s\n", line);
 			return 2;
 		}
 
@@ -123,15 +138,15 @@ int look_for_const_string(char *line, Transl_buf *cpu_instr){
 
 		pos2 = strchr(line + pos1 + 1, '\'') - line;
 
-		strncpy(cpu_instr->strings[cpu_instr->string_pos].value, line + pos1 + 1, pos2 - pos1 - 1);
+		strncpy(cpu_instr->strings[cpu_instr->string_pos].value, line + pos1 + 1, pos2 - pos1 - 1); //put value
 
+#ifdef DEBUG
 		printf("\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
 	
-		printf("\tstring: %s\n"
-				"\tvalue: %s\n", 
-		cpu_instr->strings[cpu_instr->string_pos].name, 
-		cpu_instr->strings[cpu_instr->string_pos].value);
-
+		printf("\tstring: %s\n"	"\tvalue: %s\n", 
+			cpu_instr->strings[cpu_instr->string_pos].name, 
+			cpu_instr->strings[cpu_instr->string_pos].value);
+#endif
 		cpu_instr->string_pos++;
 
 		return 0;
@@ -193,25 +208,32 @@ int read_from_file(const char *input, char **text_buffer, char ***lined_buffer, 
 *	non zero value is returned
 */
 int look_for_label(char *line, Transl_buf *cpu_instr){
-	
+
+#ifdef DEBUG
 	assert(line);
 	assert(cpu_instr);
 
-//	printf("looking for label:\n");
+	printf("looking for label...\n");
+#endif
+
 	int pos1 = 0;
 	int pos2 = 0;
 
 	if(strchr(line, ':')){
-// 		printf("found: \n");
+
+	#ifdef DEBUG
+ 		printf("found: \n");
+	#endif		
 		pos2 = strchr(line, ':') - line;
 		
-		for(pos1 = pos2 - 1; (pos1 >= 0) && isalnum(line[pos1]); pos1--)
+		for(pos1 = pos2 - 1; (pos1 >= 0) && isgraph(line[pos1]); pos1--)
 			;
 
 		pos1++;
 
-
-//		printf("\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
+	#ifdef DEBUG
+		printf("\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
+	#endif
 
 		if(pos1 == pos2){
 			printf(	"Compilation error!\n"
@@ -223,10 +245,11 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 
 		cpu_instr->labels[cpu_instr->label_pos].l_pc = cpu_instr->pos; //put address
 
-	
-//		printf("\tlabel: %s\n"
-//				"\taddr: %d\n", cpu_instr->labels[cpu_instr->label_pos].name, 
-//				cpu_instr->labels[cpu_instr->label_pos].l_pc);
+	#ifdef DEBUG
+		printf("\tlabel: %s\n" "\taddr: %d\n", 
+				cpu_instr->labels[cpu_instr->label_pos].name, 
+				cpu_instr->labels[cpu_instr->label_pos].l_pc);
+	#endif
 
 		cpu_instr->label_pos++;
 
@@ -243,9 +266,11 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 
 int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 
+#ifdef DEBUG
 	assert(line);
 	assert(instr_buf);
 	assert(arg_buf);
+#endif
 
 	int pos1 = 0;
 	int pos2 = 0;
@@ -259,20 +284,16 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 	
 	/*put instr in instr_buf*/
 	strncpy(instr_buf,(const char*) line + pos1, pos2 - pos1);
-
-	printf("\ngot intstruction: %s\n", instr_buf);
 	
 	/*deleting white spaces*/
 	while(isspace(line[pos2]))
 		pos2++;
 	
-	for(pos1 = pos2; isalnum(line[pos1]); pos1++)
+	for(pos1 = pos2; isgraph(line[pos1]); pos1++)
 		;
 
-	/*put argument in com_buf*/
+	/*put argument in instr_buf*/
 	strncpy(arg_buf, (const char*)line + pos2, pos1 - pos2);
-	
-	printf("got argument: %s.\n\n", arg_buf);
 
 	return 0;
 }
@@ -281,8 +302,10 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 *
 */
 int init_transl_buffer(Transl_buf *cpu_instr){
-	
+
+#ifdef DEBUG
 	assert(cpu_instr);
+#endif
 
 	cpu_instr->buf = calloc(MAX_BUFFER_SIZE, sizeof(char));
 
@@ -302,23 +325,20 @@ int init_transl_buffer(Transl_buf *cpu_instr){
 
 	for(int i = 0; i < MAX_NUMBER_OF_LABELS; i++){
 
-		for(int j = 0; j < MAX_LABEL_LENGTH; j++){
-
+		for(int j = 0; j < MAX_LABEL_LENGTH; j++)
 			cpu_instr->labels[i].name[j] = '\0';
-		}
-
+		
 		cpu_instr->labels[i].l_pc = -1;
 	}
 	
 	for(int i = 0; i < MAX_NUMBER_OF_CONST_STRINGS; i++){
 
-		for(int j = 0; j < MAX_CONST_STRING_LEN; j++){
+		for(int j = 0; j < MAX_CONST_STRING_LEN; j++)
 			cpu_instr->strings[i].name[j] = '\0';
-		}
 
-		for(int j = 0; j < MAX_CONST_STRING_NAME; j++){
+		for(int j = 0; j < MAX_CONST_STRING_NAME; j++)
 			cpu_instr->strings[i].value[j] = '\0';
-		}
+
 	}
 
 	return 0;
@@ -388,11 +408,10 @@ int fill_transl_buf(Transl_buf *cpu_instr, char **lined_buffer){
 	assert(lined_buffer);
 
 	for(int i = 0; lined_buffer[i]; i++){
-//		printf("\n\ntranslating %d line: ....\n", i);
+
+		printf("Line #%d\n", i);
 
 		translate_line(lined_buffer[i], cpu_instr);
-
-//		printf("%d line has been translated\n", i);
 	}
 
 	return 0;
@@ -421,16 +440,13 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 	}
 
 	/*checking the line for const_strings*/
-	if(!look_for_const_string(line, cpu_instr)){
-		printf("transl: found const_string\n");
+	if(!look_for_const_string(line, cpu_instr))
 		return 0;
-	}
 
 	/*checking the line for label*/
-	if(!look_for_label(line, cpu_instr)){
-//		printf("found label\n");
+	if(!look_for_label(line, cpu_instr))
 		return 0;
-	}
+	
 
 	/*buffer for an instruction*/
 	char instr_buf[MAX_COMMAND_SIZE_SYM + 1] = {'\0'};
@@ -440,9 +456,14 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 
 	fill_buffers(line, instr_buf, arg_buf);
 
+	printf("\tinstr: %s\n", instr_buf);
+	printf("\targ: %s\n\n", arg_buf);
+
 	int arg_type = define_argument(arg_buf);
 
-//	printf("arg_type = %d\n", arg_type);
+#ifdef DEBUG
+	printf("arg_type = %d\n", arg_type);
+#endif
 
 	#define INSTR_DEF(name, num, code_comp, code_cpu) \
 		if(!strcmp(name, instr_buf)){ \
@@ -452,27 +473,30 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 
 	#include "commands.h"
 	
-	if(!strcmp(instr_buf, ""))
-		printf(	"Compilation error: undefined instuction:\n %s\n", instr_buf);
+//	if(!strcmp(instr_buf, ""))
+//		printf(	"Compilation error: undefined instuction:\n %s\n", instr_buf);
 
 	return 0;
 }
 
 int find_label(char *arg, Transl_buf *cpu_instr){
 
-//	printf("finding label....\n");
+#ifdef DEBUG
+	printf("finding label....\n");
+#endif
 
 	for(int i = 0; i < cpu_instr->label_pos; i++){
 
 		if(!strcmp(arg, cpu_instr->labels[i].name)){
 
-//			printf("found: %s\n", cpu_instr->labels[i].name);
+		#ifdef DEBUG
+			printf("found: %s\n", cpu_instr->labels[i].name);
+		#endif
 
 			return cpu_instr->labels[i].l_pc;
 		}
 
 	}
-//	printf("Not found\n");
 
 	return -1;
 }
@@ -496,7 +520,7 @@ int define_argument(char *arg_buf){
 
 int main(int argc, char *argv[]){
 	
-	compile(argv[1], "output.bin");
+	compile(argv[1], argv[2]);
 
 	return 0;
 }

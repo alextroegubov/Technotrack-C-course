@@ -42,16 +42,11 @@ INSTR_DEF("print", 23,
 
 		char *string = find_const_string(cpu_instr, arg_buf, &len); //returns pointer to our string and it's length
 
-		printf("string = %s, it's length = %d\n", string, len);
-
 		strncpy(cpu_instr->buf + cpu_instr->pos, (const char*)string, len);
 
 		cpu_instr->pos += len; //including term symbol
 	,
 		tmp1 = strlen(cpu->instr + cpu->pc) + 1;
-
-		printf("%s\n", cpu->instr + cpu->pc);
-
 
 		cpu->pc += (int)tmp1;
 );
@@ -75,8 +70,6 @@ INSTR_DEF("ret", 21,
 		stack_pop(cpu->stk_ret, &tmp1);
 
 		cpu->pc = (int)tmp1;
-
-//		printf("returned to %d", cpu->pc);
 );	
 
 INSTR_DEF("call", 20,
@@ -85,13 +78,8 @@ INSTR_DEF("call", 20,
 		/*writing pc for back jump*/
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
-//		printf("call: pc = %d\n", *(int*)(cpu_instr->buf + cpu_instr->pos));
-
 		cpu_instr->pos += sizeof(int);
 	,
-
-//		printf("call to %d taken\n"
-//				"saved %ld\n",  *(int*)(cpu->instr + cpu->pc), cpu->pc + sizeof(int));
 
 		stack_push(cpu->stk_ret, cpu->pc + sizeof(int));
 
@@ -287,8 +275,6 @@ INSTR_DEF("ja", 12, //tmp1 > tmp2
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
-		printf("ja: pc = %d\n", *(int*)(cpu_instr->buf + cpu_instr->pos));
-
 		cpu_instr->pos += sizeof(int);
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -298,7 +284,6 @@ INSTR_DEF("ja", 12, //tmp1 > tmp2
 		stack_pop(cpu->stk, &tmp2);
 		
 		if(tmp1 > tmp2){
-			printf("jump taken to %d\n", *(int*)(cpu->instr + cpu->pc));
 			cpu->pc = *(int*)(cpu->instr + cpu->pc);
 		}
 		else
@@ -313,13 +298,10 @@ INSTR_DEF("jmp", 11,
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr); //writing pc at what we will jump
 
-		printf("jmp: pc = %d\n", *(int*)(cpu_instr->buf + cpu_instr->pos));
-
 		cpu_instr->pos += sizeof(int);
 	,
 		cntrl = cpu->instr[cpu->pc++];
 
-		printf("jump to %d taken\n", *(int*)(cpu->instr + cpu->pc));
 		cpu->pc = *(int*)(cpu->instr + cpu->pc);
 );
 
@@ -340,8 +322,6 @@ INSTR_DEF("push", 9, //takes reg or number
 
 		if(arg_type < 0){
 			/*has double in arg_buf*/
-
-			printf("double!\n");
 
 			cpu_instr->buf[cpu_instr->pos++] = D_ARG;
 
@@ -566,4 +546,5 @@ INSTR_DEF("out", 7, //takes no args, 2 b, write tmp1
 		stack_pop(cpu->stk, &tmp1);
 
 		printf("%lf\n", tmp1);
+
 );

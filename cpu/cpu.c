@@ -105,13 +105,9 @@ int execute(Cpu *cpu){
 			break;
 		}
 
-		printf("\n\npc = %d ",cpu->pc);
-
 		int instr = cpu->instr[cpu->pc++];
-		printf(" instr = %d ", instr);
 
 		int cntrl = 0;
-		printf(" cntrl = %d ", cntrl);
 
 		double tmp1 = 0;
 		double tmp2 = 0;
@@ -140,11 +136,11 @@ int execute(Cpu *cpu){
 	}
 }
 
-int main(){
+int main(int argc, char *argv[]){
 
 	Cpu cpu;
 
-	if(init_cpu(&cpu, "output.bin", "log.txt", "log_ret.txt"))
+	if(init_cpu(&cpu, argv[1], "log.txt", "log_ret.txt"))
 		return 1;
 
 	execute(&cpu);
