@@ -1,9 +1,9 @@
-const_string no_roots 'no roots'
-const_string one_root 'one root'
-const_string inf_root 'infinite number of roots'
-const_string two_real 'two real roots'
-const_string two_complex 'two complex'
-const_string matching 'matching roots'
+const_string: no_roots 'no roots'
+const_string: one_root 'one root'
+const_string: inf_root 'infinite number of roots'
+const_string: two_real 'two real roots'
+const_string: two_complex 'two complex'
+const_string: matching 'matching roots'
 
 in 
 pop rax ; rax = a

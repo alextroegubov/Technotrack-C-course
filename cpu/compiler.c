@@ -10,6 +10,9 @@
 #define MAX_BUFFER_SIZE 2000	//buffer where translated instructions are stored
 #define MAX_LABEL_LENGTH 30		//max length of label's name
 #define MAX_ARG_SIZE 30			//max size of argument in symbols
+#define MAX_CONST_STRING_LEN 50
+#define MAX_NUMBER_OF_CONST_STRINGS 20
+#define MAX_CONST_STRING_NAME 50
 
 #define INSTR_SZ 1
 #define CNTRL_SZ 1
@@ -29,12 +32,20 @@ struct _label{
 };
 typedef struct _label Label;
 
+struct Const_string{
+	char name[MAX_CONST_STRING_NAME];
+	char value[MAX_CONST_STRING_LEN];
+};
+typedef struct Const_string Const_string;
+
 struct _Transl_buf{
 	char *buf;
 	long int pos;
 	long int size;
 	Label labels[MAX_NUMBER_OF_LABELS];
+	Const_string strings[MAX_NUMBER_OF_CONST_STRINGS];
 	int label_pos;
+	int string_pos;
 };
 typedef struct _Transl_buf Transl_buf;
 
@@ -55,6 +66,81 @@ int look_for_label(char *line, Transl_buf *cpu_isntr);
 void clean_after_compilation(char *text_buffer, char **lined_buffer, char **without_empty_lines, Transl_buf *cpu_instr);
 
 int read_from_file(const char *input, char **text_buffer, char ***lined_buffer, char ***without_empty_lines);
+
+char *find_const_string(Transl_buf *cpu_instr, char *arg_buf, int *len);
+
+char *find_const_string(Transl_buf *cpu_instr, char *arg_buf, int *len){
+	printf("findigng string...\n");
+
+	for(int i = 0; i < cpu_instr->string_pos; i++){
+		if(!strcmp(arg_buf, cpu_instr->strings[i].name)){
+			printf("found: %s\n", cpu_instr->strings[i].name);
+			//including term sym
+			*len = strlen(cpu_instr->strings[i].value) + 1;
+			return cpu_instr->strings[i].value;
+		}
+	}
+
+	printf("not found\n");
+
+	return NULL;
+}
+
+
+int look_for_const_string(char *line, Transl_buf *cpu_instr){
+	
+	assert(line);
+	assert(cpu_instr);
+
+	printf("looking for const_string:\n");
+	printf("line = %s\n", line);
+	int pos1 = 0;
+	int pos2 = 0;
+
+	if(strstr(line, "const_string:")){
+
+ 		printf("found: \n");
+
+		pos1 = strchr(line, ':') - line + 1;
+
+		while(isspace(line[pos1]))
+			pos1++;
+		
+		for(pos2 = pos1; isalnum(line[pos2]); pos2++)
+			;
+
+		printf("\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
+
+		if(pos1 == pos2){
+			printf(	"Compilation error!\n"
+					"Can't identify label: %s\n", line);
+			return 2;
+		}
+
+		strncpy(cpu_instr->strings[cpu_instr->string_pos].name, (const char*) line + pos1, pos2 - pos1); //put name
+		
+		pos1 = strchr(line + pos2, '\'') - line;
+
+		pos2 = strchr(line + pos1 + 1, '\'') - line;
+
+		strncpy(cpu_instr->strings[cpu_instr->string_pos].value, line + pos1 + 1, pos2 - pos1 - 1);
+
+		printf("\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
+	
+		printf("\tstring: %s\n"
+				"\tvalue: %s\n", 
+		cpu_instr->strings[cpu_instr->string_pos].name, 
+		cpu_instr->strings[cpu_instr->string_pos].value);
+
+		cpu_instr->string_pos++;
+
+		return 0;
+	}
+	
+	return 1;
+}
+
+
 
 /** 
 * @brief frees all memory allocated during the compilation
@@ -174,7 +260,7 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 	/*put instr in instr_buf*/
 	strncpy(instr_buf,(const char*) line + pos1, pos2 - pos1);
 
-//	printf("got intstruction: %s\n", instr_buf);
+	printf("\ngot intstruction: %s\n", instr_buf);
 	
 	/*deleting white spaces*/
 	while(isspace(line[pos2]))
@@ -186,7 +272,7 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 	/*put argument in com_buf*/
 	strncpy(arg_buf, (const char*)line + pos2, pos1 - pos2);
 	
-//	printf("got argument: %s.\n", arg_buf);
+	printf("got argument: %s.\n\n", arg_buf);
 
 	return 0;
 }
@@ -210,6 +296,8 @@ int init_transl_buffer(Transl_buf *cpu_instr){
 
 	cpu_instr->label_pos = 0;
 
+	cpu_instr->string_pos = 0;
+
 	cpu_instr->size = MAX_BUFFER_SIZE;
 
 	for(int i = 0; i < MAX_NUMBER_OF_LABELS; i++){
@@ -221,6 +309,18 @@ int init_transl_buffer(Transl_buf *cpu_instr){
 
 		cpu_instr->labels[i].l_pc = -1;
 	}
+	
+	for(int i = 0; i < MAX_NUMBER_OF_CONST_STRINGS; i++){
+
+		for(int j = 0; j < MAX_CONST_STRING_LEN; j++){
+			cpu_instr->strings[i].name[j] = '\0';
+		}
+
+		for(int j = 0; j < MAX_CONST_STRING_NAME; j++){
+			cpu_instr->strings[i].value[j] = '\0';
+		}
+	}
+
 	return 0;
 }
 
@@ -319,7 +419,13 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 	if(strchr(line, ';')){
 		*strchr(line, ';') = '\0';
 	}
-	
+
+	/*checking the line for const_strings*/
+	if(!look_for_const_string(line, cpu_instr)){
+		printf("transl: found const_string\n");
+		return 0;
+	}
+
 	/*checking the line for label*/
 	if(!look_for_label(line, cpu_instr)){
 //		printf("found label\n");

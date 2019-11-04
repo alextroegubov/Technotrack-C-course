@@ -35,6 +35,38 @@
 #define LAB_ARG 3
 */
 
+INSTR_DEF("print", 23,
+		cpu_instr->buf[cpu_instr->pos++] = 23;
+
+		int len = 0; 
+
+		char *string = find_const_string(cpu_instr, arg_buf, &len); //returns pointer to our string and it's length
+
+		printf("string = %s, it's length = %d\n", string, len);
+
+		strncpy(cpu_instr->buf + cpu_instr->pos, (const char*)string, len);
+
+		cpu_instr->pos += len; //including term symbol
+	,
+		tmp1 = strlen(cpu->instr + cpu->pc) + 1;
+
+		printf("%s\n", cpu->instr + cpu->pc);
+
+
+		cpu->pc += (int)tmp1;
+);
+
+INSTR_DEF("abs", 22,
+		
+		cpu_instr->buf[cpu_instr->pos++] = 22;
+	,
+		stack_pop(cpu->stk, &tmp1);
+
+		tmp1 = (tmp1 > 0) ? tmp1 : -tmp1;
+
+		stack_push(cpu->stk, tmp1);
+		
+);
 
 INSTR_DEF("ret", 21,
 
