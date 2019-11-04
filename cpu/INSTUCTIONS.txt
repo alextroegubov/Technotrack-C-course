@@ -10,10 +10,27 @@
  label - name of the label in code
  double - any double number
 
+0) Some syntax rules:
+	1) Labels should be written in this way:
+
+		<label's name>:
+		...............
+		jmp <label's name>
+
+		A label must end with ':' without any space between <label's name> and ':'.
+
+	2) To print a constant string you should write it at the beginnig of the program in this way:
+
+		const_string: <name> '<string>'	
+		...............................
+		print <name>
+
+	3) Everything in line afrer ';' is ingnored
+
 1. Simple arithmetic commands with double arguments:
 
 	1) takes two arguments from stack, calculates and pushes teh result in stack:
-		add		tmp1+tmp2
+		add		tmp1 + tmp2
 		sub		tmp1 - tmp2 	
 		mul		tmp1 * tmp2
 		div		tmp1 / tmp2
@@ -45,7 +62,7 @@
 
 3. Input/output/interaction with stack
 
-	1) writes a double number from stdin and pushes it
+	1) reads a double number from stdin and pushes it
 		in
 
 	2) takes the top element in stack and prints it 
@@ -61,9 +78,9 @@
 	
 	5) finishes the program
 		end
-4. Complex arithmetic operations(soon):
-	sin
-	cos
+4. Complex arithmetic operations:
+	sin(soon)
+	cos(soon)
 	sqrt
 	abs
 

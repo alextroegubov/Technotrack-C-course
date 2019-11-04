@@ -4,6 +4,9 @@ const_string: inf_roots 'infinite number of roots'
 const_string: two_real 'two real roots'
 const_string: two_complex 'two complex'
 const_string: matching 'matching roots'
+const_string: re 're'
+const_string: im 'im'
+
 
 in 
 pop rax ; rax = a
@@ -56,7 +59,7 @@ solve_quadratic:
 	sub
 	pop rdx ; D = rdx
 
-	push epsilon
+	push 0.000001
 	push rdx
 	abs
 	jb matching ; D = 0
@@ -65,15 +68,62 @@ solve_quadratic:
 	push 0
 
 	jb two_real	; D >0
-	
-	push -1
-	mul rdx ; D -> -D
 
+	;two complex
 	print two_complex
-	;;;;;;;;;
-	;;;;;;;;;
-	;;;;;;;;;
-	;;;;;;;;;
+
+	push rdx
+	push -1
+	mul 
+	sqrt
+	pop rdx ;D -> sqrt(D)
+	
+	push 2
+	push rax
+	mul
+
+	push rbx
+	push -1
+	mul
+
+	div
+	print re
+	out
+
+	push 2
+	push rax
+	mul
+
+	push rdx
+	div
+	print im
+	out
+
+	
+	push 2
+	push rax
+	mul
+
+	push rbx
+	push -1
+	mul
+
+	div
+	print re
+	out
+
+	push 2
+	push rax
+	mul
+
+	push rdx
+	div
+	push -1
+	mul
+
+	print im
+	out
+
 	end
 
 
