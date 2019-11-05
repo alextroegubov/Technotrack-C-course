@@ -1,5 +1,6 @@
 Technotrack, C-course, MIPT
 
-1) Stack
-2) Cpu + assembler
+1) Quadratic equation
+2) Stack
+3) Cpu + assembler
 
