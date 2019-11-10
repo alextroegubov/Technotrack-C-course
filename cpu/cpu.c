@@ -13,17 +13,23 @@
 
 struct Cpu{
 	Stack *stk;		//for calculations
+	
 	Stack *stk_ret; //for return addresses
+	
 	double reg[4]; 	//array of registers
+	
 	int pc;			//program counter
+	
 	char *instr; 	//array with instructions
+
+	long int size;
 };
 typedef struct Cpu Cpu;
 
 
 int init_cpu(Cpu *cpu, const char *input, const char *log_stk, const char *log_stk_ret);
 
-char *read_from_file(const char *input);
+char *read_from_file(const char *input, long int *size);
 
 int execute(Cpu *cpu);
 
@@ -48,12 +54,16 @@ void destroy_cpu(Cpu *cpu){
 int init_cpu(Cpu *cpu, const char *input, const char *log_stk, const char *log_stk_ret){
 
 	if(!input){
+
 		printf("Error: init_cpu: no file to execute!\n");
+
 		return 1;
 	}
 	
 	if(!cpu){
+
 		printf("Error: init_cpu: can't init cpu!\n");
+
 		return 1;
 	}
 
@@ -66,7 +76,7 @@ int init_cpu(Cpu *cpu, const char *input, const char *log_stk, const char *log_s
 	
 	cpu->pc = 0;
 
-	cpu->instr = read_from_file(input);
+	cpu->instr = read_from_file(input, &cpu->size);
 
 	if(!cpu->instr)
 		return 1;
@@ -75,16 +85,16 @@ int init_cpu(Cpu *cpu, const char *input, const char *log_stk, const char *log_s
 
 }
 
-char *read_from_file(const char *input){
+char *read_from_file(const char *input, long int *size){
 
 	assert(input);
 
-	long int nsym = 0;
-
-	char *buffer = create_text_buffer(input, &nsym);
+	char *buffer = create_text_buffer(input, size);
 
 	if(!buffer){
+
 		printf("Error: read_from_file: can't read from file!\n");
+
 		return NULL;
 	}
 
@@ -100,7 +110,7 @@ int execute(Cpu *cpu){
 
 	while(!stop){
 		
-		if(cpu->pc < 0){
+		if(cpu->pc < 0 || cpu->pc > cpu->size){
 			printf("Error: execute: impossible pc!\n");
 			break;
 		}

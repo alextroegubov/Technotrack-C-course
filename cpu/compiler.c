@@ -4,11 +4,17 @@
 #include<stdio.h>
 #include<string.h>
 
+#define ARG_CHECK \
+	if(arg_type == ERR_ARG || arg_type == D_ARG)\
+		return 5;
+
+
 #define CHECK_JUMP \
 			if(*(int*)(cpu_instr->buf + cpu_instr->pos) == INV_PC && compilation_step == second){ \
 				printf("Compilation error: translate_line: pc == INV_PC\n");\
 				return 5;\
 			}
+
 
 #define INV_PC -1				//pc value when we haven't seen the label yet
 

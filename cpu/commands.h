@@ -103,7 +103,9 @@ INSTR_DEF("dec", 19,
 
 		cpu_instr->buf[cpu_instr->pos++] = 19;
 
-		if(arg_type < 0){
+		ARG_CHECK;
+
+		if(arg_type == NO_ARG){
 
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
@@ -135,9 +137,11 @@ INSTR_DEF("inc", 18,
 
 		cpu_instr->buf[cpu_instr->pos++] = 18;
 
-		if(arg_type < 0){
+		ARG_CHECK;
+
+		if(arg_type == NO_ARG)
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
-		}
+		
 		else {
 
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
@@ -345,7 +349,7 @@ INSTR_DEF("push", 9, //takes reg or number
 
 		cpu_instr->buf[cpu_instr->pos++] = 9;
 
-		if(arg_type < 0){
+		if(arg_type == D_ARG){
 			/*has double in arg_buf*/
 
 			cpu_instr->buf[cpu_instr->pos++] = D_ARG;
@@ -354,13 +358,15 @@ INSTR_DEF("push", 9, //takes reg or number
 
 			cpu_instr->pos += sizeof(double);
 		}
-		else{
+		else if(arg_type == REG_ARG){
 			/*has number of reg in arg_type*/
 
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 
 			cpu_instr->buf[cpu_instr->pos++] = arg_type;
 		}
+		else 
+			return 5;
 	,
 		cntrl = cpu->instr[cpu->pc++];
 
@@ -381,18 +387,20 @@ INSTR_DEF("pop", 8, //takes reg or number,
 
 		cpu_instr->buf[cpu_instr->pos++] = 8;
 
-		if(arg_type < 0){
+		if(arg_type == NO_ARG){
 			/*has no argument*/
 
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
-		else{
+		else if(arg_type == REG_ARG){
 			/*has number of reg in arg_type*/
 
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG; //reg
 
 			cpu_instr->buf[cpu_instr->pos++] = (char)arg_type;
 		}
+		else 
+			return 5;
 	,
 		cntrl = cpu->instr[cpu->pc++];
 
@@ -410,12 +418,15 @@ INSTR_DEF("pop", 8, //takes reg or number,
 INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
 		
 		cpu_instr->buf[cpu_instr->pos++] = 1;
+		
+		ARG_CHECK;
 
-		if(arg_type < 0){
+		if(arg_type == NO_ARG){
 		
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
-		else {
+		else{
+
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 			
 			cpu_instr->buf[cpu_instr->pos++] = arg_type;
@@ -445,7 +456,9 @@ INSTR_DEF("sub", 2, //takes no args, 2 b, tmp1 - tmp2
 	
 		cpu_instr->buf[cpu_instr->pos++] = 2;
 
-		if(arg_type < 0){
+		ARG_CHECK;
+
+		if(arg_type == NO_ARG){
 		
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
@@ -479,7 +492,9 @@ INSTR_DEF("mul", 3, //takes no args, 2 b, tmp2 * tmp1
 	
 		cpu_instr->buf[cpu_instr->pos++] = 3;
 
-		if(arg_type < 0){
+		ARG_CHECK;
+
+		if(arg_type == NO_ARG){
 		
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
@@ -513,7 +528,9 @@ INSTR_DEF("div", 4, //takes no args, 2 b, tmp1 / tmp2
 
 		cpu_instr->buf[cpu_instr->pos++] = 4;
 
-		if(arg_type < 0){
+		ARG_CHECK;
+
+		if(arg_type == NO_ARG){
 		
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}

@@ -172,6 +172,11 @@ char *create_text_buffer(const char *filename, long int *nsym){
 
 	FILE *file = fopen(filename, "r");
 
+	if(!file){
+//		printf("Can't open file!\n");
+		return NULL;
+	}
+
 	if (fseek(file, 0, SEEK_END)){
 		printf("Can't fseek file!\n");
 		fclose(file);
