@@ -42,10 +42,19 @@ INSTR_DEF("print", 23,
 
 		char *string = find_const_string(cpu_instr, arg_buf, &len); //returns pointer to our string and it's length
 
+		if(!string && compilation_step == second){
+
+			printf("Compilation error: transtale_line: const_string == NULL\n");
+
+			return 5;
+		}
+
 		strncpy(cpu_instr->buf + cpu_instr->pos, (const char*)string, len);
 
 		cpu_instr->pos += len; //including term symbol
 	,
+		printf("%s\n", cpu->instr + cpu->pc);
+
 		tmp1 = strlen(cpu->instr + cpu->pc) + 1;
 
 		cpu->pc += (int)tmp1;
@@ -77,6 +86,8 @@ INSTR_DEF("call", 20,
 		
 		/*writing pc for back jump*/
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
+
+		CHECK_JUMP;
 
 		cpu_instr->pos += sizeof(int);
 	,
@@ -113,7 +124,7 @@ INSTR_DEF("dec", 19,
 
 			stack_push(cpu->stk, tmp1);
 		} 
-		else {
+		else{
 			cpu->reg[cpu->instr[cpu->pc]] -= 1;
 		
 			cpu->pc += sizeof(char); 
@@ -160,6 +171,8 @@ INSTR_DEF("jne", 17, //tmp1 != tmp2
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
+		CHECK_JUMP;
+
 		cpu_instr->pos += sizeof(int);
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -182,6 +195,8 @@ INSTR_DEF("je", 16, //tmp1 = tmp2
 		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
+
+		CHECK_JUMP;
 
 		cpu_instr->pos += sizeof(int);
 	,
@@ -206,6 +221,8 @@ INSTR_DEF("jbe", 15, //tmp1 <= tmp2
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
+		CHECK_JUMP;
+
 		cpu_instr->pos += sizeof(int);
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -228,6 +245,8 @@ INSTR_DEF("jb", 14, //tmp1 < tmp2
 		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
+
+		CHECK_JUMP;
 
 		cpu_instr->pos += sizeof(int);
 	,
@@ -252,6 +271,8 @@ INSTR_DEF("jae", 13, //tmp1 >= tmp2
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
+		CHECK_JUMP;
+
 		cpu_instr->pos += sizeof(int);
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -275,6 +296,8 @@ INSTR_DEF("ja", 12, //tmp1 > tmp2
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
+		CHECK_JUMP;
+
 		cpu_instr->pos += sizeof(int);
 	,
 		cntrl = cpu->instr[cpu->pc++];
@@ -297,6 +320,8 @@ INSTR_DEF("jmp", 11,
 		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr); //writing pc at what we will jump
+
+		CHECK_JUMP;
 
 		cpu_instr->pos += sizeof(int);
 	,
