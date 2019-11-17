@@ -180,16 +180,12 @@ INSTR_DEF("jne", 17, //tmp1 != tmp2
 
 		cpu_instr->buf[cpu_instr->pos++] = 17;
 
-		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
-
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
 		CHECK_JUMP;
 
 		cpu_instr->pos += sizeof(int);
 	,
-		cntrl = cpu->instr[cpu->pc++];
-	
 		stack_pop(cpu->stk, &tmp1);
 
 		stack_pop(cpu->stk, &tmp2);
@@ -199,9 +195,7 @@ INSTR_DEF("jne", 17, //tmp1 != tmp2
 		else
 			cpu->pc += sizeof(int);
 	,
-		cntrl = instr[pc++];
-
-		fprintf(file, "jne %d [%d]\n", *(int*)(instr + pc), pc - 2);
+		fprintf(file, "jne %d [%d]\n", *(int*)(instr + pc), pc - 1);
 
 		pc += sizeof(int);
 );
@@ -211,16 +205,12 @@ INSTR_DEF("jne", 17, //tmp1 != tmp2
 INSTR_DEF("je", 16, //tmp1 = tmp2
 		cpu_instr->buf[cpu_instr->pos++] = 16;
 
-		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
-
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
 		CHECK_JUMP;
 
 		cpu_instr->pos += sizeof(int);
 	,
-		cntrl = cpu->instr[cpu->pc++];
-
 		stack_pop(cpu->stk, &tmp1);
 
 		stack_pop(cpu->stk, &tmp2);
@@ -230,9 +220,7 @@ INSTR_DEF("je", 16, //tmp1 = tmp2
 		else
 			cpu->pc += sizeof(int);
 	,
-		cntrl = instr[pc++];
-
-		fprintf(file, "je %d [%d]\n", *(int*)(instr + pc), pc - 2);
+		fprintf(file, "je %d [%d]\n", *(int*)(instr + pc), pc - 1);
 
 		pc += sizeof(int);
 );
@@ -242,16 +230,12 @@ INSTR_DEF("je", 16, //tmp1 = tmp2
 INSTR_DEF("jbe", 15, //tmp1 <= tmp2
 		cpu_instr->buf[cpu_instr->pos++] = 15;
 
-		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
-
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
 		CHECK_JUMP;
 
 		cpu_instr->pos += sizeof(int);
 	,
-		cntrl = cpu->instr[cpu->pc++];
-
 		stack_pop(cpu->stk, &tmp1);
 
 		stack_pop(cpu->stk, &tmp2);
@@ -261,9 +245,7 @@ INSTR_DEF("jbe", 15, //tmp1 <= tmp2
 		else
 			cpu->pc += sizeof(int);
 	,
-		cntrl = instr[pc++];
-		
-		fprintf(file, "jbe %d [%d]\n", *(int*)(instr + pc), pc - 2);
+		fprintf(file, "jbe %d [%d]\n", *(int*)(instr + pc), pc - 1);
 
 		pc += sizeof(int);
 );
@@ -273,16 +255,12 @@ INSTR_DEF("jbe", 15, //tmp1 <= tmp2
 INSTR_DEF("jb", 14, //tmp1 < tmp2
 		cpu_instr->buf[cpu_instr->pos++] = 14;
 
-		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
-
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
 		CHECK_JUMP;
 
 		cpu_instr->pos += sizeof(int);
 	,
-		cntrl = cpu->instr[cpu->pc++];
-
 		stack_pop(cpu->stk, &tmp1);
 
 		stack_pop(cpu->stk, &tmp2);
@@ -292,9 +270,7 @@ INSTR_DEF("jb", 14, //tmp1 < tmp2
 		else
 			cpu->pc += sizeof(int);
 	,
-		cntrl = instr[pc++];
-
-		fprintf(file, "jb %d [%d]\n", *(int*)(instr + pc), pc - 2);
+		fprintf(file, "jb %d [%d]\n", *(int*)(instr + pc), pc - 1);
 
 		pc += sizeof(int);
 );
@@ -304,16 +280,12 @@ INSTR_DEF("jb", 14, //tmp1 < tmp2
 INSTR_DEF("jae", 13, //tmp1 >= tmp2
 		cpu_instr->buf[cpu_instr->pos++] = 13;
 
-		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
-
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
 		CHECK_JUMP;
 
 		cpu_instr->pos += sizeof(int);
 	,
-		cntrl = cpu->instr[cpu->pc++];
-
 		stack_pop(cpu->stk, &tmp1);
 
 		stack_pop(cpu->stk, &tmp2);
@@ -323,9 +295,7 @@ INSTR_DEF("jae", 13, //tmp1 >= tmp2
 		else
 			cpu->pc += sizeof(int);
 	,
-		cntrl = instr[pc++];
-	
-		fprintf(file, "jae %d [%d]\n", *(int*)(instr + pc), pc - 2);
+		fprintf(file, "jae %d [%d]\n", *(int*)(instr + pc), pc - 1);
 
 		pc += sizeof(int);
 );
@@ -333,9 +303,8 @@ INSTR_DEF("jae", 13, //tmp1 >= tmp2
 
 
 INSTR_DEF("ja", 12, //tmp1 > tmp2
-		cpu_instr->buf[cpu_instr->pos++] = 12;
 
-		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
+		cpu_instr->buf[cpu_instr->pos++] = 12;
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
@@ -343,8 +312,6 @@ INSTR_DEF("ja", 12, //tmp1 > tmp2
 
 		cpu_instr->pos += sizeof(int);
 	,
-		cntrl = cpu->instr[cpu->pc++];
-
 		stack_pop(cpu->stk, &tmp1);
 
 		stack_pop(cpu->stk, &tmp2);
@@ -355,18 +322,15 @@ INSTR_DEF("ja", 12, //tmp1 > tmp2
 		else
 			cpu->pc += sizeof(int);
 	,
-		cntrl = instr[pc++];
-
-		fprintf(file, "ja %d [%d]\n", *(int*)(instr + pc), pc - 2);
+		fprintf(file, "ja %d [%d]\n", *(int*)(instr + pc), pc - 1);
 
 		pc += sizeof(int);
 );
 
 
 INSTR_DEF("jmp", 11,
-		cpu_instr->buf[cpu_instr->pos++] = 11;
 
-		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
+		cpu_instr->buf[cpu_instr->pos++] = 11;
 
 		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
@@ -374,13 +338,9 @@ INSTR_DEF("jmp", 11,
 
 		cpu_instr->pos += sizeof(int);
 	,
-		cntrl = cpu->instr[cpu->pc++];
-
 		cpu->pc = *(int*)(cpu->instr + cpu->pc);
 	,
-		cntrl = instr[pc++];
-
-		fprintf(file, "jmp %d [%d]\n", *(int*)(instr + pc), pc - 2);
+		fprintf(file, "jmp %d [%d]\n", *(int*)(instr + pc), pc - 1);
 
 		pc += sizeof(int);
 );

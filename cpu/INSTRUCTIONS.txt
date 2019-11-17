@@ -4,18 +4,21 @@
 
  designation used below:
  
- tmp1 - the top value in stack
+ tmp1 - the first top value in stack
  tmp2 - the second top value in stack
  reg - one of the registers: rax, rbx, rcx, rdx
  label - name of the label in code
  double - any double number
+ 
 
-0) Some syntax rules:
-	1) Labels should be written in this way:
 
-		<label's name>:
-		...............
-		jmp <label's name>
+0. Some syntax rules:
+	1) Labels should be written and used in this way:
+
+		<label>:
+		.............
+		.............
+		jmp <label>
 
 		A label must end with ':' without any space between <label's name> and ':'.
 
@@ -23,13 +26,18 @@
 
 		const_string: <name> '<string>'	
 		...............................
+		...............................
 		print <name>
 
-	3) Everything in line afrer ';' is ingnored
+		Only digits, letters and '_' may be used in <name>
+
+	3) Everything in line afrer ';' is ingnored (comments)
+
+	4) Any extra symbols in lines are considered as a compilation error
 
 1. Simple arithmetic commands with double arguments:
 
-	1) takes two arguments from stack, calculates and pushes teh result in stack:
+	1) takes two arguments from stack, calculates and pushes the result in stack:
 		add		tmp1 + tmp2
 		sub		tmp1 - tmp2 	
 		mul		tmp1 * tmp2
@@ -78,6 +86,10 @@
 	
 	5) finishes the program
 		end
+
+	6) prints constant string
+		print <name>
+
 4. Complex arithmetic operations:
 	sin(soon)
 	cos(soon)

@@ -101,7 +101,6 @@ int execute(Cpu *cpu){
 
 			#define INSTR_DEF(name, num, code_comp, code_cpu, code_disasm)\
 			case num: \
-				printf("intst = %s\n", name);\
 				code_cpu;\
 				break;
 
@@ -109,11 +108,12 @@ int execute(Cpu *cpu){
 
 			default:
 				printf("unknown instr!\n");
-				stop = 2;
+
+				stop = FAIL_STOP;
 		}
 	}
 
-	if(!stop || stop == 2){
+	if(!stop || stop == FAIL_STOP){
 
 		printf("Execution failed!\n");
 

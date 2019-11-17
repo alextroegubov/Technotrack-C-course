@@ -57,18 +57,16 @@ int compile(const char *input, const char *output, const char *log_file){
 
 	char **lined_buffer = NULL;
 
-	char **without_empty_lines = NULL;
-
-	if(read_from_file(input, &text_buffer, &lined_buffer, &without_empty_lines)){
+	if(read_from_file(input, &text_buffer, &lined_buffer)){
 
 		printf("Compilation error: compile: can't read from file!\n");
 
-		clean_after_compilation(text_buffer, lined_buffer, without_empty_lines, &cpu_instr);
+		clean_after_compilation(text_buffer, lined_buffer, &cpu_instr);
 		
 		return 2;
 	}
 
-	if(fill_transl_buf(&cpu_instr, without_empty_lines)){
+	if(fill_transl_buf(&cpu_instr, lined_buffer)){
 
 		printf("Compilation error: compile: can't translate file!\n");
 
@@ -79,7 +77,7 @@ int compile(const char *input, const char *output, const char *log_file){
 
 	compilation_step = second;
 
-	if(fill_transl_buf(&cpu_instr, without_empty_lines)){
+	if(fill_transl_buf(&cpu_instr, lined_buffer)){
 		
 		printf("Compilation error: compile: can't translate file!\n");
 
@@ -92,7 +90,7 @@ int compile(const char *input, const char *output, const char *log_file){
 
 	fclose(file_out);
 
-	clean_after_compilation(text_buffer, lined_buffer, without_empty_lines, &cpu_instr);
+	clean_after_compilation(text_buffer, lined_buffer, &cpu_instr);
 
 	return 0;
 }
@@ -160,7 +158,7 @@ int init_transl_buffer(Transl_buf *cpu_instr, const char *log_file){
 * @brief responsible for reading instructions from file and separating them into lines
 * for translating
 */
-int read_from_file(const char *input, char **text_buffer, char ***lined_buffer, char ***without_empty_lines){
+int read_from_file(const char *input, char **text_buffer, char ***lined_buffer){
 
 #ifdef DEBUG
 	assert(input);
@@ -184,17 +182,6 @@ int read_from_file(const char *input, char **text_buffer, char ***lined_buffer, 
 		printf("Compilation errror: read_from_file: can't create buffer!\n");
 
 		return 2;
-	}
-
-	long int nlines = 0;
-
-	*without_empty_lines = create_buffer_without_empty_lines(*lined_buffer, &nlines);
-
-	if(!*without_empty_lines){
-
-		printf("Compilation error: read_from_file: can't create buffer!\n");
-
-		return 3;
 	}
 
 	return 0;
@@ -367,13 +354,13 @@ int look_for_const_string(char *line, Transl_buf *cpu_instr){
 	fprintf(cpu_instr->log_file, "looking for const_string:\n");
 #endif
 
-	int pos1 = 0, pos2 = 0;
-
 	if(strstr(line, "const_string:")){
 
 #ifdef DEBUG
  		fprintf(cpu_instr->log_file, "found: \n");
 #endif		
+		if(compilation_step == second)
+			return 0;
 
 		if(cpu_instr->string_pos > MAX_NUMBER_OF_CONST_STRINGS){
 
@@ -406,6 +393,12 @@ int look_for_const_string(char *line, Transl_buf *cpu_instr){
 
 
 int take_const_string_name(const char *line, Transl_buf *cpu_instr){
+
+#ifdef DEBUG
+	assert(line);
+	
+	assert(cpu_instr);
+#endif
 
 	int pos1 = 0, pos2 = 0;
 
@@ -466,6 +459,12 @@ int take_const_string_name(const char *line, Transl_buf *cpu_instr){
 
 
 int take_const_string_value(const char *line, Transl_buf *cpu_instr){
+
+#ifdef DEBUG
+	assert(line);
+
+	assert(cpu_instr);
+#endif
 
 	int pos1 = 0, pos2 = 0;
 
@@ -550,6 +549,10 @@ char *find_const_string(Transl_buf *cpu_instr, char *arg_buf, int *len){
 */
 int compiler_create_log_file(const char *filename){
 
+#ifdef DEBUG
+	assert(filename);
+#endif
+
     FILE *file = fopen(filename, "w");
 
     if (!file){
@@ -589,6 +592,9 @@ int look_for_label(const char *line, Transl_buf *cpu_instr){
 	int pos1 = 0, pos2 = 0;;
 
 	if(strchr(line, ':')){
+
+		if(compilation_step == second)
+			return 0;
 
 		pos2 = strchr(line, ':') - line;
 		
@@ -813,7 +819,7 @@ int define_argument(char *arg_buf){
 /** 
 * @brief frees all memory allocated during the compilation and closes opened files
 */
-void clean_after_compilation(char *text_buffer, char **lined_buffer, char **without_empty_lines, Transl_buf *cpu_instr){
+void clean_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf *cpu_instr){
 
 #ifdef DEBUG
 	assert(cpu_instr);
@@ -823,10 +829,6 @@ void clean_after_compilation(char *text_buffer, char **lined_buffer, char **with
 
 	lined_buffer = NULL;
 
-	free(without_empty_lines);
-
-	without_empty_lines = NULL;
-	
 	free(text_buffer);
 
 	text_buffer = NULL;

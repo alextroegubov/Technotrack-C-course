@@ -35,12 +35,12 @@
 #define LABEL_IN_LINE 11
 
 enum  compilation_step_t{
-	first = 1,
-	second = 2
+	first,
+	second
 };
 
 
-static enum compilation_step_t compilation_step = 1;
+static enum compilation_step_t compilation_step = first;
 
 struct Label{
 
@@ -85,7 +85,7 @@ int compile(const char *input, const char *output, const char *log_file);
 
 int init_transl_buffer(Transl_buf *cpu_instr, const char *log_file);
 
-int read_from_file(const char *input, char **text_buffer, char ***lined_buffer, char ***without_empty_lines);
+int read_from_file(const char *input, char **text_buffer, char ***lined_buffer/*, char ***without_empty_lines*/);
 
 int fill_transl_buf(Transl_buf *cpu_instr, char **lined_buffer);
 
@@ -111,6 +111,6 @@ int define_argument(char *arg_buf);
 
 int fill_buffers(char *line, char *instr_buf, char *arg_buf);
 
-void clean_after_compilation(char *text_buffer, char **lined_buffer, char **without_empty_lines, Transl_buf *cpu_instr);
+void clean_after_compilation(char *text_buffer, char **lined_buffer/*, char **without_empty_lines*/, Transl_buf *cpu_instr);
 
 #endif

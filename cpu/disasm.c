@@ -12,7 +12,9 @@ char *read_from_file(const char *input, long int *size);
 int create_output_file(const char *output);
 
 int create_output_file(const char *output){
-	
+
+	assert(output);
+
 	FILE *file = fopen(output, "w");
 
 	if(!file){
@@ -30,6 +32,8 @@ int create_output_file(const char *output){
 char *read_from_file(const char *input, long int *size){
 
 	assert(input);
+	
+	assert(size);
 
 	char *buffer = create_text_buffer(input, size);
 
@@ -53,36 +57,33 @@ int disasm(const char *input, const char *output){
 
 	char *instr = read_from_file(input, &size);
 
-	int i = 0;
-
-	while(i < size){
-
-		printf("[%d] = %x\n", i, instr[i]);
-		i++;
-	}
-
-	assert(instr);
-
 	create_output_file(output);
 
 	FILE *file = fopen(output, "a");
 
+	if(!file){
+	
+		printf("Disasm error: can't open file\n");
+
+		return 1;
+	}
+
 	int pc = 0;
+
+	char instruction = 0;
+
+	char cntrl = 0;
 
 	while(pc < size){
 		
 		if(pc < 0){
+
 			printf("Error: disasm: impossible pc!\n");
+
 			break;
 		}
 
-//		printf("*");
-
-		char instruction = instr[pc++];
-
-//		printf("Instr = %x\n", instruction);
-
-		char cntrl = 0;
+		instruction = instr[pc++];
 
 		switch(instruction){
 
@@ -94,6 +95,7 @@ int disasm(const char *input, const char *output){
 			#include "commands.h"
 			default:
 				fprintf(file, "*****unknown instr!*****\n");
+
 				break;
 		}
 	}

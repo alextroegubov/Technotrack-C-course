@@ -2,6 +2,8 @@
 
 #define CPU_H
 
+#define FAIL_STOP 2
+
 struct Cpu{
     Stack *stk;     //for calculations
     
