@@ -33,23 +33,6 @@ INSTR_DEF("print", 23,
 	,
 		fprintf(file, "print %s [%d]\n", instr + pc, pc - 1);
 
-void destroy_cpu(Cpu *cpu){
-	
-	stack_destroy(cpu->stk);
-	
-	cpu->stk = NULL;
-
-	stack_destroy(cpu->stk_ret);
-
-	cpu->stk_ret = NULL;
-
-	free(cpu->instr);
-
-	cpu->instr = NULL;
-}
-
-
-
 		pc += strlen(instr + pc) + 1;
 );
 
@@ -539,6 +522,8 @@ INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
 		cpu_instr->buf[cpu_instr->pos++] = 1;
 		
 		arg_type = define_argument(arg_buf);
+		
+		fprintf(cpu_instr->log_file, "com: arg_type = %d\n", arg_type);
 
 		ARG_CHECK;
 
@@ -572,6 +557,9 @@ INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
 		}
 	,
 		cntrl = instr[pc++];
+		
+		printf("add wfjsdf\n");
+		printf("cntrl = %d, REG_ARG = %d, NO_ARG = %d\n", cntrl, REG_ARG, NO_ARG);
 
 		if(cntrl == REG_ARG){
 

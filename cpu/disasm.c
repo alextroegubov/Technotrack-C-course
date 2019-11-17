@@ -5,11 +5,14 @@
 #include <math.h>
 #include <assert.h>
 
-#define INSTR_SZ 1
-#define CNTRL_SZ 1
-#define NO_ARG 0
-#define REG_ARG 2
-#define D_ARG 1
+
+/*cntrl values*/
+#define NO_ARG 13
+#define REG_ARG 3 //total number of reg - 1: 0, 1, 2, 3
+#define D_ARG 10
+#define LAB_ARG 11
+#define ERR_ARG 14
+
 
 char *read_from_file(const char *input, long int *size);
 
@@ -57,6 +60,14 @@ int disasm(const char *input, const char *output){
 
 	char *instr = read_from_file(input, &size);
 
+	int i = 0;
+
+	while(i < size){
+
+		printf("[%d] = %x\n", i, instr[i]);
+		i++;
+	}
+
 	assert(instr);
 
 	create_output_file(output);
@@ -68,13 +79,17 @@ int disasm(const char *input, const char *output){
 	while(pc < size){
 		
 		if(pc < 0){
-			printf("Error: execute: impossible pc!\n");
+			printf("Error: disasm: impossible pc!\n");
 			break;
 		}
 
+		printf("*");
+
 		char instruction = instr[pc++];
 
-		int cntrl = 0;
+		printf("Instr = %x\n", instruction);
+
+		char cntrl = 0;
 
 		switch(instruction){
 
@@ -86,7 +101,6 @@ int disasm(const char *input, const char *output){
 			#include "commands.h"
 			default:
 				fprintf(file, "*****unknown instr!*****\n");
-				
 				break;
 		}
 	}

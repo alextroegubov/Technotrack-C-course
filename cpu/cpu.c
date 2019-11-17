@@ -5,11 +5,12 @@
 #include <math.h>
 #include <assert.h>
 
-#define INSTR_SZ 1
-#define CNTRL_SZ 1
-#define NO_ARG 0
-#define REG_ARG 2
-#define D_ARG 1
+/*cntrl values*/
+#define NO_ARG 13
+#define REG_ARG 3 //total number of reg - 1: 0, 1, 2, 3
+#define D_ARG 10
+#define LAB_ARG 11
+#define ERR_ARG 14
 
 struct Cpu{
 	Stack *stk;		//for calculations

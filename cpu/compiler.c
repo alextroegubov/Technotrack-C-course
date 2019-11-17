@@ -784,10 +784,6 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 
 	int arg_type = 0;// define_argument(arg_buf);
 
-#ifdef DEBUG
-	fprintf(cpu_instr->log_file, "arg_type = %d\n", arg_type);
-#endif
-
 	#define INSTR_DEF(name, num, code_comp, code_cpu, code_disasm) \
 		if(!strcmp(name, instr_buf)){ \
 			code_comp; \
@@ -864,7 +860,7 @@ int define_argument(char *arg_buf){
 
 		return 3;
 	}
-	else if(!strcmp(arg_buf, "")){
+	else if(arg_buf[0] == '\0'){  /*<---*/
 		
 		return NO_ARG;
 	}
