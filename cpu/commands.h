@@ -393,14 +393,10 @@ INSTR_DEF("jmp", 11,
 );
 
 INSTR_DEF("end", 10, 
+
 		cpu_instr->buf[cpu_instr->pos++] = 10;
 	,
-
 		stop = 1;
-
-		printf("Finished\n");
-
-		return 0;
 	,
 		fprintf(file, "end [%d]\n", pc - 1);
 );

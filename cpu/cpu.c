@@ -1,41 +1,12 @@
-#include "stack.c"
 #include <stdlib.h>
 #include <stdio.h>
-#include "file_functions.c"
 #include <math.h>
 #include <assert.h>
 
-/*cntrl values*/
-#define NO_ARG 13
-#define REG_ARG 3 //total number of reg - 1: 0, 1, 2, 3
-#define D_ARG 10
-#define LAB_ARG 11
-#define ERR_ARG 14
-
-struct Cpu{
-	Stack *stk;		//for calculations
-	
-	Stack *stk_ret; //for return addresses
-	
-	double reg[4]; 	//array of registers
-	
-	int pc;			//program counter
-	
-	char *instr; 	//array with instructions
-
-	long int size;
-};
-typedef struct Cpu Cpu;
-
-
-int init_cpu(Cpu *cpu, const char *input, const char *log_stk, const char *log_stk_ret);
-
-char *read_from_file(const char *input, long int *size);
-
-int execute(Cpu *cpu);
-
-void destroy_cpu(Cpu *cpu);
-
+#include "stack.c"
+#include "const.h"
+#include "cpu.h"
+#include "file_functions.c"
 
 void destroy_cpu(Cpu *cpu){
 	
@@ -51,6 +22,7 @@ void destroy_cpu(Cpu *cpu){
 
 	cpu->instr = NULL;
 }
+
 
 int init_cpu(Cpu *cpu, const char *input, const char *log_stk, const char *log_stk_ret){
 
@@ -86,6 +58,7 @@ int init_cpu(Cpu *cpu, const char *input, const char *log_stk, const char *log_s
 
 }
 
+
 char *read_from_file(const char *input, long int *size){
 
 	assert(input);
@@ -102,20 +75,22 @@ char *read_from_file(const char *input, long int *size){
 	return buffer;
 }
 
+
 int execute(Cpu *cpu){
 
 	assert(cpu);
 
-	int stop = 0;
+	int stop = 0; //1 successful 2 -error
 
 	while(!stop){
 		
 		if(cpu->pc < 0 || cpu->pc > cpu->size){
+
 			printf("Error: execute: impossible pc!\n");
+
 			break;
 		}
-		
-		printf("*\n");
+
 		int instr = cpu->instr[cpu->pc++];
 
 		int cntrl = 0;
@@ -126,31 +101,39 @@ int execute(Cpu *cpu){
 
 			#define INSTR_DEF(name, num, code_comp, code_cpu, code_disasm)\
 			case num: \
+				printf("intst = %s\n", name);\
 				code_cpu;\
+
 				break;
 
 			#include "commands.h"
+
 			default:
 				printf("unknown instr!\n");
-				break;
+				stop = 2;
 		}
 	}
 
-	if(!stop){
+	if(!stop || stop == 2){
+
 		printf("Execution failed!\n");
+
 		return 1;
 	}
-	else{
+	else {
+
 		printf("Executed successfully. Good luck!\n");
+
 		return 0;
 	}
 }
 
+
 int main(int argc, char *argv[]){
 
-	Cpu cpu;
+	Cpu cpu = {0};
 
-	if(init_cpu(&cpu, argv[1], "log.txt", "log_ret.txt"))
+	if(init_cpu(&cpu, argv[1], "stk.log", "stk_ret.log"))
 		return 1;
 
 	execute(&cpu);

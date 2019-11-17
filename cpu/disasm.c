@@ -1,18 +1,11 @@
-#include "stack.c"
 #include <stdlib.h>
 #include <stdio.h>
-#include "file_functions.c"
 #include <math.h>
 #include <assert.h>
 
-
-/*cntrl values*/
-#define NO_ARG 13
-#define REG_ARG 3 //total number of reg - 1: 0, 1, 2, 3
-#define D_ARG 10
-#define LAB_ARG 11
-#define ERR_ARG 14
-
+#include "stack.c"
+#include "file_functions.c"
+#include "const.h"
 
 char *read_from_file(const char *input, long int *size);
 
@@ -83,11 +76,11 @@ int disasm(const char *input, const char *output){
 			break;
 		}
 
-		printf("*");
+//		printf("*");
 
 		char instruction = instr[pc++];
 
-		printf("Instr = %x\n", instruction);
+//		printf("Instr = %x\n", instruction);
 
 		char cntrl = 0;
 
