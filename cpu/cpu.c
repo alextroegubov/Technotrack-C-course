@@ -103,7 +103,6 @@ int execute(Cpu *cpu){
 			case num: \
 				printf("intst = %s\n", name);\
 				code_cpu;\
-
 				break;
 
 			#include "commands.h"

@@ -1,12 +1,5 @@
 /*INSTR_DEF(name, num, code_comp, code_cpu, code_disasm)*/
 
-/*
-#define NO_ARG 0
-#define REG_ARG 2
-#define D_ARG 1
-#define LAB_ARG 3
-*/
-
 INSTR_DEF("print", 23,
 		cpu_instr->buf[cpu_instr->pos++] = 23;
 
@@ -375,7 +368,7 @@ INSTR_DEF("jmp", 11,
 
 		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
 
-		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr); //writing pc at what we will jump
+		*(int*)(cpu_instr->buf + cpu_instr->pos) = find_label(arg_buf, cpu_instr);
 
 		CHECK_JUMP;
 
@@ -401,7 +394,7 @@ INSTR_DEF("end", 10,
 		fprintf(file, "end [%d]\n", pc - 1);
 );
 
-INSTR_DEF("push", 9, //takes reg or number
+INSTR_DEF("push", 9,
 		
 		arg_type = define_argument(arg_buf);
 
@@ -462,7 +455,7 @@ INSTR_DEF("push", 9, //takes reg or number
 );
 
 
-INSTR_DEF("pop", 8, //takes reg or number,
+INSTR_DEF("pop", 8,
 		
 		arg_type = define_argument(arg_buf);
 
@@ -490,9 +483,11 @@ INSTR_DEF("pop", 8, //takes reg or number,
 		cntrl = cpu->instr[cpu->pc++];
 
 		if(cntrl == NO_ARG){
-			stack_pop(cpu->stk, &tmp1); //?? 
+
+			stack_pop(cpu->stk, &tmp1); 
 		}
 		else if(cntrl == REG_ARG){
+
 			stack_pop(cpu->stk, &cpu->reg[cpu->instr[cpu->pc]]);
 
 			cpu->pc += sizeof(char); //reg 
@@ -513,7 +508,7 @@ INSTR_DEF("pop", 8, //takes reg or number,
 );
 
 
-INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
+INSTR_DEF("add", 1,
 		
 		cpu_instr->buf[cpu_instr->pos++] = 1;
 		
@@ -535,8 +530,9 @@ INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
 		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
-
+		
 		if(cntrl == REG_ARG){
+
 			stack_pop(cpu->stk, &tmp1);
 
 			cpu->reg[cpu->instr[cpu->pc]] += tmp1;
@@ -554,9 +550,6 @@ INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
 	,
 		cntrl = instr[pc++];
 		
-		printf("add wfjsdf\n");
-		printf("cntrl = %d, REG_ARG = %d, NO_ARG = %d\n", cntrl, REG_ARG, NO_ARG);
-
 		if(cntrl == REG_ARG){
 
 			fprintf(file, "add reg%d [%d]\n", instr[pc], pc - 2);
@@ -570,7 +563,7 @@ INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
 );
 
 
-INSTR_DEF("sub", 2, //takes no args, 2 b, tmp1 - tmp2
+INSTR_DEF("sub", 2,
 	
 		cpu_instr->buf[cpu_instr->pos++] = 2;
 
@@ -583,6 +576,7 @@ INSTR_DEF("sub", 2, //takes no args, 2 b, tmp1 - tmp2
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
 		else {
+
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 			
 			cpu_instr->buf[cpu_instr->pos++] = arg_type;
@@ -591,6 +585,7 @@ INSTR_DEF("sub", 2, //takes no args, 2 b, tmp1 - tmp2
 		cntrl = cpu->instr[cpu->pc++];
 
 		if(cntrl == REG_ARG){
+
 			stack_pop(cpu->stk, &tmp1);
 
 			cpu->reg[cpu->instr[cpu->pc]] -= tmp1;
@@ -621,7 +616,7 @@ INSTR_DEF("sub", 2, //takes no args, 2 b, tmp1 - tmp2
 );
 
 
-INSTR_DEF("mul", 3, //takes no args, 2 b, tmp2 * tmp1
+INSTR_DEF("mul", 3,
 	
 		cpu_instr->buf[cpu_instr->pos++] = 3;
 
@@ -634,6 +629,7 @@ INSTR_DEF("mul", 3, //takes no args, 2 b, tmp2 * tmp1
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
 		else {
+
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 			
 			cpu_instr->buf[cpu_instr->pos++] = arg_type;
@@ -642,6 +638,7 @@ INSTR_DEF("mul", 3, //takes no args, 2 b, tmp2 * tmp1
 		cntrl = cpu->instr[cpu->pc++];
 
 		if(cntrl == REG_ARG){
+
 			stack_pop(cpu->stk, &tmp1);
 
 			cpu->reg[cpu->instr[cpu->pc]] *= tmp1;
@@ -671,7 +668,7 @@ INSTR_DEF("mul", 3, //takes no args, 2 b, tmp2 * tmp1
 		}
 );
 
-INSTR_DEF("div", 4, //takes no args, 2 b, tmp1 / tmp2
+INSTR_DEF("div", 4,
 
 		cpu_instr->buf[cpu_instr->pos++] = 4;
 
@@ -684,6 +681,7 @@ INSTR_DEF("div", 4, //takes no args, 2 b, tmp1 / tmp2
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
 		else {
+
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 			
 			cpu_instr->buf[cpu_instr->pos++] = arg_type;
@@ -723,7 +721,7 @@ INSTR_DEF("div", 4, //takes no args, 2 b, tmp1 / tmp2
 );
 
 
-INSTR_DEF("sqrt", 5, //takes no args, 2 b, sqrt(tmp1)
+INSTR_DEF("sqrt", 5,
 	
 		cpu_instr->buf[cpu_instr->pos++] = 5;
 	,
@@ -736,7 +734,7 @@ INSTR_DEF("sqrt", 5, //takes no args, 2 b, sqrt(tmp1)
 
 
 
-INSTR_DEF("in", 6, //takes no args, 2 b, read dbl in tmp1 
+INSTR_DEF("in", 6,
 
 		cpu_instr->buf[cpu_instr->pos++] = 6;
 	,
@@ -748,7 +746,7 @@ INSTR_DEF("in", 6, //takes no args, 2 b, read dbl in tmp1
 );
 
 
-INSTR_DEF("out", 7, //takes no args, 2 b, write tmp1
+INSTR_DEF("out", 7,
 	
 		cpu_instr->buf[cpu_instr->pos++] = 7;
 	,
