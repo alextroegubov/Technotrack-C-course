@@ -1,0 +1,71 @@
+				________LOG FILE FOR COMPILER________
+Line #0
+looking for const_string:
+looking for label...
+	instr: push
+	arg: 5
+
+arg_type = 0
+Line #1
+looking for const_string:
+looking for label...
+	instr: push
+	arg: 6
+
+arg_type = 0
+Line #2
+looking for const_string:
+looking for label...
+	instr: add
+	arg: 
+
+arg_type = 0
+Line #3
+looking for const_string:
+looking for label...
+	instr: out
+	arg: 
+
+arg_type = 0
+Line #4
+looking for const_string:
+looking for label...
+	instr: end
+	arg: 
+
+arg_type = 0
+Line #0
+looking for const_string:
+looking for label...
+	instr: push
+	arg: 5
+
+arg_type = 0
+Line #1
+looking for const_string:
+looking for label...
+	instr: push
+	arg: 6
+
+arg_type = 0
+Line #2
+looking for const_string:
+looking for label...
+	instr: add
+	arg: 
+
+arg_type = 0
+Line #3
+looking for const_string:
+looking for label...
+	instr: out
+	arg: 
+
+arg_type = 0
+Line #4
+looking for const_string:
+looking for label...
+	instr: end
+	arg: 
+
+arg_type = 0

@@ -106,7 +106,6 @@ int execute(Cpu *cpu){
 	assert(cpu);
 
 	int stop = 0;
-	int i = 0;
 
 	while(!stop){
 		
@@ -114,17 +113,17 @@ int execute(Cpu *cpu){
 			printf("Error: execute: impossible pc!\n");
 			break;
 		}
-
+		
+		printf("*\n");
 		int instr = cpu->instr[cpu->pc++];
 
 		int cntrl = 0;
 
-		double tmp1 = 0;
-		double tmp2 = 0;
+		double tmp1 = 0, tmp2 = 0;
 
 		switch(instr){
 
-			#define INSTR_DEF(name, num, code_comp, code_cpu)\
+			#define INSTR_DEF(name, num, code_comp, code_cpu, code_disasm)\
 			case num: \
 				code_cpu;\
 				break;

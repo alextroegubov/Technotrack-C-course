@@ -1,33 +1,5 @@
-/*	Complier:
-		translates to  		cpu_instr {buf(char*), pos, size}
+/*INSTR_DEF(name, num, code_comp, code_cpu, code_disasm)*/
 
-		istruction in 		instr_buf
-		
-		cntrl_buf:		
-						0 - no argument(no arg)
-						1 - double argument(double in arg) 
-						2 - reg argument(char in arg) 
-		argument in arg_buf
-
-		arg_type:
-						number of reg: if we have reg arg- pop&push
-						< 0: if we have double(push) or no argument(pop)
-
-	for cpu:
-		stack - cpu->stk
-
-		cpu->reg[4]: rax, rbx, rcx, rdx
-		cpu->pc
-
-		cpu->instr - array of bytes with instructions 
-		double tmp1 = 0, tmp2 = 0;
-
-		instr - instruction code
-		cntrl - controls argument
-		arg in cpu->instr
-*/
-
-/*INSTR_DEF(name, num, code_comp, code_cpu)*/
 /*
 #define NO_ARG 0
 #define REG_ARG 2
@@ -58,6 +30,27 @@ INSTR_DEF("print", 23,
 		tmp1 = strlen(cpu->instr + cpu->pc) + 1;
 
 		cpu->pc += (int)tmp1;
+	,
+		fprintf(file, "print %s [%d]\n", instr + pc, pc - 1);
+
+void destroy_cpu(Cpu *cpu){
+	
+	stack_destroy(cpu->stk);
+	
+	cpu->stk = NULL;
+
+	stack_destroy(cpu->stk_ret);
+
+	cpu->stk_ret = NULL;
+
+	free(cpu->instr);
+
+	cpu->instr = NULL;
+}
+
+
+
+		pc += strlen(instr + pc) + 1;
 );
 
 INSTR_DEF("abs", 22,
@@ -69,7 +62,8 @@ INSTR_DEF("abs", 22,
 		tmp1 = (tmp1 > 0) ? tmp1 : -tmp1;
 
 		stack_push(cpu->stk, tmp1);
-		
+	,
+		fprintf(file, "abs [%d]\n", pc - 1);  		
 );
 
 INSTR_DEF("ret", 21,
@@ -79,6 +73,8 @@ INSTR_DEF("ret", 21,
 		stack_pop(cpu->stk_ret, &tmp1);
 
 		cpu->pc = (int)tmp1;
+	,
+		fprintf(file, "ret [%d]\n", pc - 1);
 );	
 
 INSTR_DEF("call", 20,
@@ -95,6 +91,10 @@ INSTR_DEF("call", 20,
 		stack_push(cpu->stk_ret, cpu->pc + sizeof(int));
 
 		cpu->pc = *(int*)(cpu->instr + cpu->pc);
+	,
+		fprintf(file, "call %d [%d]\n", *(int*)(instr + pc), pc - 1);
+
+		pc += sizeof(int);
 );
 
 
@@ -102,6 +102,8 @@ INSTR_DEF("call", 20,
 INSTR_DEF("dec", 19,
 
 		cpu_instr->buf[cpu_instr->pos++] = 19;
+
+		arg_type = define_argument(arg_buf);
 
 		ARG_CHECK;
 
@@ -127,15 +129,31 @@ INSTR_DEF("dec", 19,
 			stack_push(cpu->stk, tmp1);
 		} 
 		else{
+
 			cpu->reg[cpu->instr[cpu->pc]] -= 1;
 		
 			cpu->pc += sizeof(char); 
+		}
+	,
+		cntrl = instr[pc++];
+
+		if(cntrl == NO_ARG){
+			
+			fprintf(file, "dec [%d]\n", pc - 2);
+		} 
+		else{
+
+			fprintf(file, "dec reg%d [%d]\n", instr[pc], pc - 2);
+
+			pc++; 
 		}
 );
 
 INSTR_DEF("inc", 18,
 
 		cpu_instr->buf[cpu_instr->pos++] = 18;
+
+		arg_type = define_argument(arg_buf);
 
 		ARG_CHECK;
 
@@ -160,15 +178,30 @@ INSTR_DEF("inc", 18,
 			stack_push(cpu->stk, tmp1);
 		} 
 		else if(cntrl == REG_ARG){
+
 			cpu->reg[cpu->instr[cpu->pc]] += 1;
 		
 			cpu->pc += sizeof(char); 
+		}
+	,
+		cntrl = instr[pc++];
+
+		if(cntrl == NO_ARG){
+			
+			fprintf(file, "inc [%d]\n", pc - 2);
+		} 
+		else{
+
+			fprintf(file, "inc reg%d [%d]\n", instr[pc], pc - 2);
+
+			pc++; 
 		}
 );
 
 
 
 INSTR_DEF("jne", 17, //tmp1 != tmp2
+
 		cpu_instr->buf[cpu_instr->pos++] = 17;
 
 		cpu_instr->buf[cpu_instr->pos++] = LAB_ARG;
@@ -189,6 +222,12 @@ INSTR_DEF("jne", 17, //tmp1 != tmp2
 			cpu->pc = *(int*)(cpu->instr + cpu->pc);
 		else
 			cpu->pc += sizeof(int);
+	,
+		cntrl = instr[pc++];
+
+		fprintf(file, "jne %d [%d]\n", *(int*)(instr + pc), pc - 2);
+
+		pc += sizeof(int);
 );
 
 
@@ -214,6 +253,12 @@ INSTR_DEF("je", 16, //tmp1 = tmp2
 			cpu->pc = *(int*)(cpu->instr + cpu->pc);
 		else
 			cpu->pc += sizeof(int);
+	,
+		cntrl = instr[pc++];
+
+		fprintf(file, "je %d [%d]\n", *(int*)(instr + pc), pc - 2);
+
+		pc += sizeof(int);
 );
 
 
@@ -239,6 +284,12 @@ INSTR_DEF("jbe", 15, //tmp1 <= tmp2
 			cpu->pc = *(int*)(cpu->instr + cpu->pc);
 		else
 			cpu->pc += sizeof(int);
+	,
+		cntrl = instr[pc++];
+		
+		fprintf(file, "jbe %d [%d]\n", *(int*)(instr + pc), pc - 2);
+
+		pc += sizeof(int);
 );
 
 
@@ -264,6 +315,12 @@ INSTR_DEF("jb", 14, //tmp1 < tmp2
 			cpu->pc = *(int*)(cpu->instr + cpu->pc);
 		else
 			cpu->pc += sizeof(int);
+	,
+		cntrl = instr[pc++];
+
+		fprintf(file, "jb %d [%d]\n", *(int*)(instr + pc), pc - 2);
+
+		pc += sizeof(int);
 );
 
 
@@ -289,6 +346,12 @@ INSTR_DEF("jae", 13, //tmp1 >= tmp2
 			cpu->pc = *(int*)(cpu->instr + cpu->pc);
 		else
 			cpu->pc += sizeof(int);
+	,
+		cntrl = instr[pc++];
+	
+		fprintf(file, "jae %d [%d]\n", *(int*)(instr + pc), pc - 2);
+
+		pc += sizeof(int);
 );
 
 
@@ -315,6 +378,12 @@ INSTR_DEF("ja", 12, //tmp1 > tmp2
 		}
 		else
 			cpu->pc += sizeof(int);
+	,
+		cntrl = instr[pc++];
+
+		fprintf(file, "ja %d [%d]\n", *(int*)(instr + pc), pc - 2);
+
+		pc += sizeof(int);
 );
 
 
@@ -332,6 +401,12 @@ INSTR_DEF("jmp", 11,
 		cntrl = cpu->instr[cpu->pc++];
 
 		cpu->pc = *(int*)(cpu->instr + cpu->pc);
+	,
+		cntrl = instr[pc++];
+
+		fprintf(file, "jmp %d [%d]\n", *(int*)(instr + pc), pc - 2);
+
+		pc += sizeof(int);
 );
 
 INSTR_DEF("end", 10, 
@@ -343,9 +418,15 @@ INSTR_DEF("end", 10,
 		printf("Finished\n");
 
 		return 0;
+	,
+		fprintf(file, "end [%d]\n", pc - 1);
 );
 
 INSTR_DEF("push", 9, //takes reg or number
+		
+		arg_type = define_argument(arg_buf);
+
+		fprintf(cpu_instr->log_file, "arg_type = %d\n", arg_type);
 
 		cpu_instr->buf[cpu_instr->pos++] = 9;
 
@@ -358,15 +439,18 @@ INSTR_DEF("push", 9, //takes reg or number
 
 			cpu_instr->pos += sizeof(double);
 		}
-		else if(arg_type == REG_ARG){
+		else if(arg_type <= REG_ARG){
 			/*has number of reg in arg_type*/
 
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG;
 
-			cpu_instr->buf[cpu_instr->pos++] = arg_type;
+			cpu_instr->buf[cpu_instr->pos++] = (char)arg_type;
 		}
-		else 
+		else{
+			printf("Compilation error: translate_line: wrong argument: %s\n", arg_buf);
+
 			return 5;
+		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
 
@@ -376,14 +460,32 @@ INSTR_DEF("push", 9, //takes reg or number
 			cpu->pc += sizeof(double);  
 		}
 		else if(cntrl == REG_ARG){
-			stack_push(cpu->stk, cpu->reg[cpu->instr[cpu->pc]]); /*??????*/
+			stack_push(cpu->stk, cpu->reg[cpu->instr[cpu->pc]]);
 
 			cpu->pc += sizeof(char); 
 		}
+	,
+		cntrl = instr[pc++];
+
+		if(cntrl == D_ARG){
+
+			fprintf(file, "push %lf [%d]\n", *(double*)(instr + pc), pc - 2);	
+
+			pc += sizeof(double);  
+		}
+		else if(cntrl == REG_ARG){
+
+			fprintf(file, "push reg%d [%d]\n", instr[pc], pc - 2);
+
+			pc += sizeof(char); 
+		}
+		
 );
 
 
 INSTR_DEF("pop", 8, //takes reg or number,
+		
+		arg_type = define_argument(arg_buf);
 
 		cpu_instr->buf[cpu_instr->pos++] = 8;
 
@@ -392,15 +494,19 @@ INSTR_DEF("pop", 8, //takes reg or number,
 
 			cpu_instr->buf[cpu_instr->pos++] = NO_ARG;
 		}
-		else if(arg_type == REG_ARG){
+		else if(arg_type <= REG_ARG){
 			/*has number of reg in arg_type*/
 
 			cpu_instr->buf[cpu_instr->pos++] = REG_ARG; //reg
 
 			cpu_instr->buf[cpu_instr->pos++] = (char)arg_type;
 		}
-		else 
+		else{
+
+			printf("Compilation error: translate_line: wrong argument: %s\n", arg_buf);
+
 			return 5;
+		}
 	,
 		cntrl = cpu->instr[cpu->pc++];
 
@@ -412,6 +518,19 @@ INSTR_DEF("pop", 8, //takes reg or number,
 
 			cpu->pc += sizeof(char); //reg 
 		}
+	,
+		cntrl = instr[pc++];
+
+		if(cntrl == NO_ARG){
+
+			fprintf(file, "pop [%d]\n", pc - 2);
+		}
+		else if(cntrl == REG_ARG){
+
+			fprintf(file, "pop reg%d [%d]\n", instr[pc], pc - 2); 
+
+			pc += sizeof(char); //reg 
+		}
 );
 
 
@@ -419,6 +538,8 @@ INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
 		
 		cpu_instr->buf[cpu_instr->pos++] = 1;
 		
+		arg_type = define_argument(arg_buf);
+
 		ARG_CHECK;
 
 		if(arg_type == NO_ARG){
@@ -437,7 +558,7 @@ INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
 		if(cntrl == REG_ARG){
 			stack_pop(cpu->stk, &tmp1);
 
-			cpu->reg[cpu->pc] += tmp1;
+			cpu->reg[cpu->instr[cpu->pc]] += tmp1;
 
 			cpu->pc++;
 		}
@@ -449,12 +570,27 @@ INSTR_DEF("add", 1, //takes no args, 2 b, tmp1 +tmp2
 
 			stack_push(cpu->stk, tmp1 + tmp2);
 		}
+	,
+		cntrl = instr[pc++];
+
+		if(cntrl == REG_ARG){
+
+			fprintf(file, "add reg%d [%d]\n", instr[pc], pc - 2);
+
+			pc++;
+		}
+		else if(cntrl == NO_ARG){
+
+			fprintf(file, "add [%d]\n", pc -2);
+		}
 );
 
 
 INSTR_DEF("sub", 2, //takes no args, 2 b, tmp1 - tmp2
 	
 		cpu_instr->buf[cpu_instr->pos++] = 2;
+
+		arg_type = define_argument(arg_buf);
 
 		ARG_CHECK;
 
@@ -473,7 +609,7 @@ INSTR_DEF("sub", 2, //takes no args, 2 b, tmp1 - tmp2
 		if(cntrl == REG_ARG){
 			stack_pop(cpu->stk, &tmp1);
 
-			cpu->reg[cpu->pc] -= tmp1;
+			cpu->reg[cpu->instr[cpu->pc]] -= tmp1;
 
 			cpu->pc++;
 		}
@@ -485,12 +621,27 @@ INSTR_DEF("sub", 2, //takes no args, 2 b, tmp1 - tmp2
 
 			stack_push(cpu->stk, tmp1 - tmp2);
 		}
+	,
+		cntrl = instr[pc++];
+
+		if(cntrl == REG_ARG){
+
+			fprintf(file, "sub reg%d [%d]\n", instr[pc], pc - 2);
+
+			pc++;
+		}
+		else if(cntrl == NO_ARG){
+
+			fprintf(file, "sub [%d]\n", pc -2);
+		}
 );
 
 
 INSTR_DEF("mul", 3, //takes no args, 2 b, tmp2 * tmp1
 	
 		cpu_instr->buf[cpu_instr->pos++] = 3;
+
+		arg_type = define_argument(arg_buf);
 
 		ARG_CHECK;
 
@@ -509,7 +660,7 @@ INSTR_DEF("mul", 3, //takes no args, 2 b, tmp2 * tmp1
 		if(cntrl == REG_ARG){
 			stack_pop(cpu->stk, &tmp1);
 
-			cpu->reg[cpu->pc] *= tmp1;
+			cpu->reg[cpu->instr[cpu->pc]] *= tmp1;
 
 			cpu->pc++;
 		}
@@ -521,12 +672,26 @@ INSTR_DEF("mul", 3, //takes no args, 2 b, tmp2 * tmp1
 
 			stack_push(cpu->stk, tmp1 * tmp2);
 		}
-);
+	,
+		cntrl = instr[pc++];
 
+		if(cntrl == REG_ARG){
+
+			fprintf(file, "mul reg%d [%d]\n", instr[pc], pc - 2);
+
+			pc++;
+		}
+		else if(cntrl == NO_ARG){
+
+			fprintf(file, "mul [%d]\n", pc -2);
+		}
+);
 
 INSTR_DEF("div", 4, //takes no args, 2 b, tmp1 / tmp2
 
 		cpu_instr->buf[cpu_instr->pos++] = 4;
+
+		arg_type = define_argument(arg_buf);
 
 		ARG_CHECK;
 
@@ -543,9 +708,10 @@ INSTR_DEF("div", 4, //takes no args, 2 b, tmp1 / tmp2
 		cntrl = cpu->instr[cpu->pc++];
 
 		if(cntrl == REG_ARG){
+
 			stack_pop(cpu->stk, &tmp1);
 
-			cpu->reg[cpu->pc] /= tmp1;
+			cpu->reg[cpu->instr[cpu->pc]] /= tmp1;
 
 			cpu->pc++;
 		}
@@ -557,6 +723,19 @@ INSTR_DEF("div", 4, //takes no args, 2 b, tmp1 / tmp2
 
 			stack_push(cpu->stk, tmp1 / tmp2);
 		}
+	,
+		cntrl = instr[pc++];
+
+		if(cntrl == REG_ARG){
+
+			fprintf(file, "div reg%d [%d]\n", instr[pc], pc - 2);
+
+			pc++;
+		}
+		else if(cntrl == NO_ARG){
+
+			fprintf(file, "div [%d]\n", pc -2);
+		}
 );
 
 
@@ -567,6 +746,8 @@ INSTR_DEF("sqrt", 5, //takes no args, 2 b, sqrt(tmp1)
 		stack_pop(cpu->stk, &tmp1);
 
 		stack_push(cpu->stk, sqrt(tmp1));
+	,
+		fprintf(file, "sqrt [%d]\n", pc - 1);
 );
 
 
@@ -578,6 +759,8 @@ INSTR_DEF("in", 6, //takes no args, 2 b, read dbl in tmp1
 		scanf("%lf", &tmp1);
 
 		stack_push(cpu->stk, tmp1);
+	,
+		fprintf(file, "in [%d]\n", pc - 1);
 );
 
 
@@ -588,5 +771,7 @@ INSTR_DEF("out", 7, //takes no args, 2 b, write tmp1
 		stack_pop(cpu->stk, &tmp1);
 
 		printf("%lf\n", tmp1);
+	,
+		fprintf(file, "out [%d] \n", pc - 1);
 
 );

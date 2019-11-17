@@ -1,0 +1,27 @@
+sub reg13 [4]
+jae 218366467 [11]
+in [21]
+abs [22]
+sqrt [23]
+end [24]
+end [31]
+*****unknown instr!*****
+*****unknown instr!*****
+*****unknown instr!*****
+*****unknown instr!*****
+*****unknown instr!*****
+*****unknown instr!*****
+*****unknown instr!*****
+*****unknown instr!*****
+jmp 201326592 [44]
+jmp 218103808 [50]
+jmp 234881024 [56]
+jmp 251658240 [62]
+jmp 268435456 [68]
+jmp 285212672 [74]
+jmp 301989888 [80]
+jae 219349507 [86]
+dec reg2 [92]
+call 0 [95]
+ret [100]
+print ahahaha [101]

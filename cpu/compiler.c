@@ -5,8 +5,10 @@
 #include<string.h>
 
 #define ARG_CHECK \
-	if(arg_type == ERR_ARG || arg_type == D_ARG)\
-		return 5;
+	if(arg_type == ERR_ARG || arg_type == D_ARG){\
+		printf("Compilation error: translate_line: wrong argument: %s\n", arg_buf);\
+		return 5;\
+	}
 
 
 #define CHECK_JUMP \
@@ -18,25 +20,25 @@
 
 #define INV_PC -1				//pc value when we haven't seen the label yet
 
-#define MAX_ARG_SIZE 30         //max size of argument in symbols
-#define MAX_INSTR_SIZE 8		//max size of instruction in symbols
+#define MAX_ARG_SIZE 30         //max size of argument
+#define MAX_INSTR_SIZE 8		//max size of instruction 
 #define MAX_LINE_SIZE 100 		//max size of line in code
 
-#define MAX_BUFFER_SIZE 2000    //buffer where translated instructions are stored
+#define MAX_BUFFER_SIZE 2000    	//buffer where translated instructions are stored
 
-#define MAX_NUMBER_OF_LABELS 50	//max number of labels in code
-#define MAX_LABEL_LEN 30		//max length of label's name
+#define MAX_NUMBER_OF_LABELS 50		//max number of labels in code
+#define MAX_LABEL_LEN 30			//max length of label's name
 
-#define MAX_CONST_STRING_LEN 50
-#define MAX_NUMBER_OF_CONST_STRINGS 20
-#define MAX_CONST_STRING_NAME 50
+#define MAX_CONST_STRING_LEN 50			//max length of constant string	
+#define MAX_NUMBER_OF_CONST_STRINGS 20	//max number of constant string in asm code
+#define MAX_CONST_STRING_NAME 50		//max length of constant string name
 
 #define NO_LABEL 10
 #define NO_CONST_STRING 10
 
 /*cntrl values*/
 #define NO_ARG 13
-#define REG_ARG 12
+#define REG_ARG 3 //total number of reg - 1: 0, 1, 2, 3
 #define D_ARG 10
 #define LAB_ARG 11
 #define ERR_ARG 14
@@ -57,20 +59,25 @@ static enum compilation_step_t compilation_step = 1;
 
 
 struct Label{
+
 	char name[MAX_LABEL_LEN];
+
 	int l_pc;
 };
 typedef struct Label Label;
 
 
 struct Const_string{
+
 	char name[MAX_CONST_STRING_NAME];
+
 	char value[MAX_CONST_STRING_LEN];
 };
 typedef struct Const_string Const_string;
 
 
 struct _Transl_buf{
+
 	char *buf;
 
 	long int pos;
@@ -102,7 +109,7 @@ int find_label(char *arg, Transl_buf *cpu_instr);
 
 int init_transl_buffer(Transl_buf *cpu_instr, const char *log_file);
 
-int look_for_label(char *line, Transl_buf *cpu_isntr);
+int look_for_label(const char *line, Transl_buf *cpu_isntr);
 
 void clean_after_compilation(char *text_buffer, char **lined_buffer, char **without_empty_lines, Transl_buf *cpu_instr);
 
@@ -127,13 +134,16 @@ char *find_const_string(Transl_buf *cpu_instr, char *arg_buf, int *len){
 
 	assert(len);
 
-	fprintf(cpu_instr->log_file, "findigng string...\n");
+	fprintf(cpu_instr->log_file, "finding string...\n");
 #endif
 
+	fprintf(cpu_instr->log_file, "origin = %s, %ld\n", arg_buf, strlen(arg_buf));
 	for(int i = 0; i < cpu_instr->string_pos; i++){
 
-		if(!strcmp(arg_buf, cpu_instr->strings[i].name)){
+	fprintf(cpu_instr->log_file, "name[%d] = %s, %ld \n", i, cpu_instr->strings[i].name, strlen(cpu_instr->strings[i].name));
 
+		if(!strcmp(arg_buf, cpu_instr->strings[i].name)){
+			
 	#ifdef DEBUG
 			fprintf(cpu_instr->log_file, "found: %s\n", cpu_instr->strings[i].name);
 	#endif
@@ -144,7 +154,7 @@ char *find_const_string(Transl_buf *cpu_instr, char *arg_buf, int *len){
 	}
 
 	if(compilation_step == second)
-		printf("Compilation error: find_const_string: can't find const string\n %s\n", arg_buf);
+		printf("Compilation error: find_const_string: can't find const string\n" "%s\n", arg_buf);
 
 	return NULL;
 }
@@ -211,9 +221,10 @@ int look_for_const_string(char *line, Transl_buf *cpu_instr){
 		}
 		
 		/*check the rest of string untill 'value'*/
+		int pos3 = pos2;
 
-		for(;line[pos2] != '\''; pos2++)
-			if(!isspace(line[pos2])){
+		for(;line[pos3] != '\''; pos3++)
+			if(!isspace(line[pos3])){
 				
 				printf("Compilation error: look_for_const_string: unexpected symbols(middle)!\n %s \n", line);
 			
@@ -240,13 +251,14 @@ int look_for_const_string(char *line, Transl_buf *cpu_instr){
 
 		pos2 += 1;
 
-		for(; line[pos2] != '\0'; pos2++)
+		for(; line[pos2] != '\0'; pos2++){
 			if(!isspace(line[pos2])){
 			
-				printf("Compilation error: look_for_const_string: unexpected symbols(front)!\n %s \n", line);
+				printf("Compilation error: look_for_const_string: unexpected symbols(right)!\n %s \n", line);
 
 				return 6;	
 			}
+		}
 
 #ifdef DEBUG
 		fprintf(cpu_instr->log_file, "\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
@@ -255,6 +267,7 @@ int look_for_const_string(char *line, Transl_buf *cpu_instr){
 				cpu_instr->strings[cpu_instr->string_pos].name, 
 				cpu_instr->strings[cpu_instr->string_pos].value);
 #endif
+
 		cpu_instr->string_pos++;
 
 		return 0;
@@ -262,7 +275,6 @@ int look_for_const_string(char *line, Transl_buf *cpu_instr){
 
 	return NO_CONST_STRING;
 }
-
 
 
 /** 
@@ -346,7 +358,7 @@ int read_from_file(const char *input, char **text_buffer, char ***lined_buffer, 
 * @return If a label is found then we put it array of label with an appropriate address and 0 is returned. In other cases
 *	non zero value is returned
 */
-int look_for_label(char *line, Transl_buf *cpu_instr){
+int look_for_label(const char *line, Transl_buf *cpu_instr){
 
 #ifdef DEBUG
 	assert(line);
@@ -372,7 +384,8 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 	#endif
 
 		if(pos1 == pos2){
-			printf("Compilation error!\n"
+
+			printf("Compilation error: look_for_label:\n"
 					"Can't identify label: %s\n", line);
 
 			return 1;
@@ -380,7 +393,7 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 
 		if(pos2 - pos1 > MAX_LABEL_LEN){
 
-			printf("Compilation error: too long label\n %s \n", line);
+			printf("Compilation error: look_for_label: too long label\n %s \n", line);
 
 			return 2;
 		}
@@ -388,30 +401,33 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 		//put name
 		strncpy(cpu_instr->labels[cpu_instr->label_pos].name, (const char*) line + pos1, pos2 - pos1);
 	
-		/*checking the rest of the line (front)*/
+		/*checking the rest of the line (right)*/
 
 		pos2 += 1;
 
-		for(;line[pos2] != '\0'; pos2++)		
+		for(;line[pos2] != '\0'; pos2++){
+
 			if(!isspace(line[pos2])){
 
-				printf("Compilation error: fill_buffers: unexpected symbols(front):\n %s \n", line);
+				printf("Compilation error: look_for_label: unexpected symbols(right):\n" "%s \n", line);
 
 				return 3;
 			}
-
-		/*checking the rest of the line (back)*/
-
-		pos1 -= 1;
-
-		for(; &line[pos1] != line; pos1--)		
-			if(!isspace(line[pos1])){
-
-				printf("Compilation error: fill_buffers: unexpected symbols(back):\n %s \n", line);
-
-				return 4;
 		}
 
+		/*checking the rest of the line (left)*/
+		if(&line[pos1] != line)
+			pos1 -= 1;
+
+		for(; &line[pos1] != line; pos1--){		
+			
+			if(!isspace(line[pos1])){
+
+				printf("Compilation error: look_for_label: unexpected symbols(left):\n" "%s \n", line);
+
+				return 4;
+			}
+		}
 		//put address
 		cpu_instr->labels[cpu_instr->label_pos].l_pc = cpu_instr->pos;
 
@@ -425,7 +441,7 @@ int look_for_label(char *line, Transl_buf *cpu_instr){
 
 		return 0;
 	}
-	
+
 	return NO_LABEL;
 }
 
@@ -481,12 +497,15 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 	strncpy(arg_buf, (const char*)line + pos2, pos1 - pos2);
 
 	/*checking the rest of the line*/
-	for(;line[pos1] != '\0'; pos1++)		
+	for(;line[pos1] != '\0'; pos1++){	
+
 		if(!isspace(line[pos1])){
-			printf("Compilation error: fill_buffers: unexpected symbols:\n %s \n", line);
+
+			printf("Compilation error: fill_buffers: unexpected symbols(right):\n %s \n", line);
 
 			return 3;
 		}
+	}
 
 	return 0;
 }
@@ -527,7 +546,7 @@ int init_transl_buffer(Transl_buf *cpu_instr, const char *log_file){
 
 	compiler_create_log_file(log_file);
 
-	cpu_instr->log_file = fopen(log_file, "w");
+	cpu_instr->log_file = fopen(log_file, "a");
 
 	if(!cpu_instr->log_file){
 
@@ -594,6 +613,7 @@ int compile(const char *input, const char *output, const char *log_file){
 
 		return 1;
 	}
+
 	if(!output){
 
 		printf("Compilation error: no output file!\n");
@@ -640,7 +660,7 @@ int compile(const char *input, const char *output, const char *log_file){
 
 	if(fill_transl_buf(&cpu_instr, without_empty_lines)){
 		
-		printf("Compilation error: compile: can't translatefile!\n");
+		printf("Compilation error: compile: can't translate file!\n");
 
 		return 3;
 	}
@@ -762,13 +782,13 @@ int translate_line(char *_line, Transl_buf *cpu_instr){
 
 	fprintf(cpu_instr->log_file, "\targ: %s\n\n", arg_buf);
 
-	int arg_type = define_argument(arg_buf);
+	int arg_type = 0;// define_argument(arg_buf);
 
 #ifdef DEBUG
 	fprintf(cpu_instr->log_file, "arg_type = %d\n", arg_type);
 #endif
 
-	#define INSTR_DEF(name, num, code_comp, code_cpu) \
+	#define INSTR_DEF(name, num, code_comp, code_cpu, code_disasm) \
 		if(!strcmp(name, instr_buf)){ \
 			code_comp; \
 			return 0; \
