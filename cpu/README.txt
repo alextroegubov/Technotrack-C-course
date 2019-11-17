@@ -4,7 +4,7 @@ Simple implementation of compiler, disassmber and soft cpu.
 
 1) As an example of perfomance there are two "asm" programs: calculating factorial and solving quadratic equation
 
-2) Compiler provides working with labels constant string(to print) and checking many syntax errors (even has kind of debug mode)
+2) Compiler provides working with labels, constant strings(to print) and checking many syntax errors (even has kind of debug mode)
 
 3) By changing constants in compiler.h you can vary possible number of labels, constant strings etc.
 
