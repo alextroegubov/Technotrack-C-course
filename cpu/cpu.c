@@ -3,7 +3,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include "stack.c"
+#include "stack.h"
 #include "const.h"
 #include "cpu.h"
 #include "file_functions.c"
@@ -106,6 +106,7 @@ int execute(Cpu *cpu){
 
 			#include "commands.h"
 
+			#undef INSTR_DEF
 			default:
 				printf("unknown instr!\n");
 

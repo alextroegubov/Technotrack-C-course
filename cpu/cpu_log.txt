@@ -1,48 +1,57 @@
 				________LOG FILE FOR COMPILER________
 Line #0
 looking for const_string:
-found: 
-	string: no_roots
-	value: no roots
+looking for label...
+	instr: in
+	arg: 
+
 Line #1
 looking for const_string:
-found: 
-	string: one_root
-	value: one root
+looking for label...
+	instr: pop
+	arg: rcx
+
 Line #2
-looking for const_string:
-found: 
-	string: inf_roots
-	value: infinite number of roots
-Line #3
-looking for const_string:
-found: 
-	string: two_real
-	value: two real roots
-Line #4
-looking for const_string:
-found: 
-	string: two_complex
-	value: two complex
-Line #5
-looking for const_string:
-found: 
-	string: matching
-	value: matching roots
-Line #6
-looking for const_string:
-found: 
-	string: re
-	value: re
-Line #7
-looking for const_string:
-found: 
-	string: im
-	value: im
-Line #8
 looking for const_string:
 looking for label...
 	instr: 
+	arg: 
+
+Line #3
+looking for const_string:
+looking for label...
+	instr: 
+	arg: 
+
+Line #4
+looking for const_string:
+looking for label...
+	instr: call
+	arg: factorial
+
+finding label....
+Line #5
+looking for const_string:
+looking for label...
+	instr: 
+	arg: 
+
+Line #6
+looking for const_string:
+looking for label...
+	instr: out
+	arg: 
+
+Line #7
+looking for const_string:
+looking for label...
+	instr: 
+	arg: 
+
+Line #8
+looking for const_string:
+looking for label...
+	instr: end
 	arg: 
 
 Line #9
@@ -54,33 +63,35 @@ looking for label...
 Line #10
 looking for const_string:
 looking for label...
-	instr: in
-	arg: 
-
+	label: factorial
+	addr: 11
 Line #11
-looking for const_string:
-looking for label...
-	instr: pop
-	arg: rax
-
-Line #12
 looking for const_string:
 looking for label...
 	instr: 
 	arg: 
 
+Line #12
+looking for const_string:
+looking for label...
+	instr: push
+	arg: rcx
+
+arg_type = 2
 Line #13
 looking for const_string:
 looking for label...
-	instr: in
-	arg: 
+	instr: push
+	arg: 1
 
+arg_type = 22
 Line #14
 looking for const_string:
 looking for label...
-	instr: pop
-	arg: rbx
+	instr: jae
+	arg: ret1
 
+finding label....
 Line #15
 looking for const_string:
 looking for label...
@@ -90,1061 +101,114 @@ looking for label...
 Line #16
 looking for const_string:
 looking for label...
-	instr: in
-	arg: 
+	instr: push
+	arg: rcx
 
+arg_type = 2
 Line #17
 looking for const_string:
 looking for label...
-	instr: pop
+	instr: dec
 	arg: rcx
 
 Line #18
 looking for const_string:
 looking for label...
-	instr: 
-	arg: 
+	instr: call
+	arg: factorial
 
+finding label....
+found: factorial
 Line #19
 looking for const_string:
 looking for label...
-	instr: push
-	arg: rax
+	instr: mul
+	arg: 
 
-arg_type = 0
 Line #20
 looking for const_string:
 looking for label...
-	instr: push
-	arg: 0
+	instr: ret
+	arg: 
 
-arg_type = 22
 Line #21
 looking for const_string:
 looking for label...
-	instr: jne
-	arg: solve_quadratic
+	instr: 
+	arg: 
 
-finding label....
 Line #22
 looking for const_string:
 looking for label...
-	instr: 
-	arg: 
-
+	label: ret1
+	addr: 43
 Line #23
 looking for const_string:
 looking for label...
-	instr: 
-	arg: 
+	instr: push
+	arg: 1
 
+arg_type = 22
 Line #24
 looking for const_string:
 looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #25
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #26
-looking for const_string:
-looking for label...
-	instr: je
-	arg: inf_or_no
-
-finding label....
-Line #27
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #28
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rcx
-
-arg_type = 2
-Line #29
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #30
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #31
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #32
-looking for const_string:
-looking for label...
-	instr: print
-	arg: one_root
-
-finding string...
-found: one_root
-Line #33
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #34
-looking for const_string:
-looking for label...
-	instr: end
-	arg: 
-
-Line #35
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #36
-looking for const_string:
-looking for label...
-	label: inf_or_no
-	addr: 80
-Line #37
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #38
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rcx
-
-arg_type = 2
-Line #39
-looking for const_string:
-looking for label...
-	instr: je
-	arg: inf_roots
-
-finding label....
-Line #40
-looking for const_string:
-looking for label...
-	instr: print
-	arg: no_roots
-
-finding string...
-found: no_roots
-Line #41
-looking for const_string:
-looking for label...
-	instr: end
-	arg: 
-
-Line #42
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #43
-looking for const_string:
-looking for label...
-	label: inf_roots
-	addr: 109
-Line #44
-looking for const_string:
-looking for label...
-	instr: print
-	arg: inf_roots
-
-finding string...
-found: inf_roots
-Line #45
-looking for const_string:
-looking for label...
-	instr: end
-	arg: 
-
-Line #46
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #47
-looking for const_string:
-looking for label...
-	label: solve_quadratic
-	addr: 136
-Line #48
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 4
-
-arg_type = 22
-Line #49
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #50
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rcx
-
-arg_type = 2
-Line #51
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #52
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #53
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #54
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #55
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #56
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #57
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #58
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #59
-looking for const_string:
-looking for label...
-	instr: pop
-	arg: rdx
-
-Line #60
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #61
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0.000001
-
-arg_type = 22
-Line #62
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #63
-looking for const_string:
-looking for label...
-	instr: abs
-	arg: 
-
-Line #64
-looking for const_string:
-looking for label...
-	instr: jb
-	arg: matching
-
-finding label....
-Line #65
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #66
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #67
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #68
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #69
-looking for const_string:
-looking for label...
-	instr: jb
-	arg: two_real
-
-finding label....
-Line #70
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #71
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #72
-looking for const_string:
-looking for label...
-	instr: print
-	arg: two_complex
-
-finding string...
-found: two_complex
-Line #73
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #74
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #75
-looking for const_string:
-looking for label...
-	instr: push
-	arg: -1
-
-arg_type = 22
-Line #76
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #77
-looking for const_string:
-looking for label...
-	instr: sqrt
-	arg: 
-
-Line #78
-looking for const_string:
-looking for label...
-	instr: pop
-	arg: rdx
-
-Line #79
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #80
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #81
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #82
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #83
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #84
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #85
-looking for const_string:
-looking for label...
-	instr: push
-	arg: -1
-
-arg_type = 22
-Line #86
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #87
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #88
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #89
-looking for const_string:
-looking for label...
-	instr: print
-	arg: re
-
-finding string...
-found: re
-Line #90
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #91
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #92
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #93
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #94
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #95
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #96
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #97
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #98
-looking for const_string:
-looking for label...
-	instr: print
-	arg: im
-
-finding string...
-found: im
-Line #99
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #100
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #101
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #102
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #103
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #104
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #105
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #106
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #107
-looking for const_string:
-looking for label...
-	instr: push
-	arg: -1
-
-arg_type = 22
-Line #108
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #109
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #110
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #111
-looking for const_string:
-looking for label...
-	instr: print
-	arg: re
-
-finding string...
-found: re
-Line #112
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #113
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #114
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #115
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #116
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #117
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #118
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #119
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #120
-looking for const_string:
-looking for label...
-	instr: push
-	arg: -1
-
-arg_type = 22
-Line #121
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #122
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #123
-looking for const_string:
-looking for label...
-	instr: print
-	arg: im
-
-finding string...
-found: im
-Line #124
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #125
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #126
-looking for const_string:
-looking for label...
-	instr: end
-	arg: 
-
-Line #127
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #128
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #129
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #130
-looking for const_string:
-looking for label...
-	label: two_real
-	addr: 375
-Line #131
-looking for const_string:
-looking for label...
-	instr: print
-	arg: two_real
-
-finding string...
-found: two_real
-Line #132
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #133
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #134
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #135
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #136
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #137
-looking for const_string:
-looking for label...
-	instr: sqrt
-	arg: 
-
-Line #138
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #139
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #140
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #141
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #142
-looking for const_string:
-looking for label...
-	instr: add
-	arg: 
-
-com: arg_type = 21
-Line #143
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #144
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #145
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #146
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #147
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #148
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #149
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #150
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #151
-looking for const_string:
-looking for label...
-	instr: sqrt
-	arg: 
-
-Line #152
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #153
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #154
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #155
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #156
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #157
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #158
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #159
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #160
-looking for const_string:
-looking for label...
-	instr: end
-	arg: 
-
-Line #161
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #162
-looking for const_string:
-looking for label...
-	label: matching
-	addr: 470
-Line #163
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #164
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #165
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #166
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #167
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #168
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #169
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #170
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #171
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #172
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #173
-looking for const_string:
-looking for label...
-	instr: print
-	arg: matching
-
-finding string...
-found: matching
-Line #174
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #175
-looking for const_string:
-looking for label...
-	instr: end
+	instr: ret
 	arg: 
 
 Line #0
 looking for const_string:
-found: 
+looking for label...
+	instr: in
+	arg: 
+
 Line #1
 looking for const_string:
-found: 
+looking for label...
+	instr: pop
+	arg: rcx
+
 Line #2
-looking for const_string:
-found: 
-Line #3
-looking for const_string:
-found: 
-Line #4
-looking for const_string:
-found: 
-Line #5
-looking for const_string:
-found: 
-Line #6
-looking for const_string:
-found: 
-Line #7
-looking for const_string:
-found: 
-Line #8
 looking for const_string:
 looking for label...
 	instr: 
+	arg: 
+
+Line #3
+looking for const_string:
+looking for label...
+	instr: 
+	arg: 
+
+Line #4
+looking for const_string:
+looking for label...
+	instr: call
+	arg: factorial
+
+finding label....
+found: factorial
+Line #5
+looking for const_string:
+looking for label...
+	instr: 
+	arg: 
+
+Line #6
+looking for const_string:
+looking for label...
+	instr: out
+	arg: 
+
+Line #7
+looking for const_string:
+looking for label...
+	instr: 
+	arg: 
+
+Line #8
+looking for const_string:
+looking for label...
+	instr: end
 	arg: 
 
 Line #9
@@ -1156,33 +220,34 @@ looking for label...
 Line #10
 looking for const_string:
 looking for label...
-	instr: in
-	arg: 
-
 Line #11
-looking for const_string:
-looking for label...
-	instr: pop
-	arg: rax
-
-Line #12
 looking for const_string:
 looking for label...
 	instr: 
 	arg: 
 
+Line #12
+looking for const_string:
+looking for label...
+	instr: push
+	arg: rcx
+
+arg_type = 2
 Line #13
 looking for const_string:
 looking for label...
-	instr: in
-	arg: 
+	instr: push
+	arg: 1
 
+arg_type = 22
 Line #14
 looking for const_string:
 looking for label...
-	instr: pop
-	arg: rbx
+	instr: jae
+	arg: ret1
 
+finding label....
+found: ret1
 Line #15
 looking for const_string:
 looking for label...
@@ -1192,1025 +257,55 @@ looking for label...
 Line #16
 looking for const_string:
 looking for label...
-	instr: in
-	arg: 
+	instr: push
+	arg: rcx
 
+arg_type = 2
 Line #17
 looking for const_string:
 looking for label...
-	instr: pop
+	instr: dec
 	arg: rcx
 
 Line #18
 looking for const_string:
 looking for label...
-	instr: 
-	arg: 
+	instr: call
+	arg: factorial
 
+finding label....
+found: factorial
 Line #19
 looking for const_string:
 looking for label...
-	instr: push
-	arg: rax
+	instr: mul
+	arg: 
 
-arg_type = 0
 Line #20
 looking for const_string:
 looking for label...
-	instr: push
-	arg: 0
+	instr: ret
+	arg: 
 
-arg_type = 22
 Line #21
 looking for const_string:
 looking for label...
-	instr: jne
-	arg: solve_quadratic
+	instr: 
+	arg: 
 
-finding label....
-found: solve_quadratic
 Line #22
 looking for const_string:
 looking for label...
-	instr: 
-	arg: 
-
 Line #23
 looking for const_string:
 looking for label...
-	instr: 
-	arg: 
+	instr: push
+	arg: 1
 
+arg_type = 22
 Line #24
 looking for const_string:
 looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #25
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #26
-looking for const_string:
-looking for label...
-	instr: je
-	arg: inf_or_no
-
-finding label....
-found: inf_or_no
-Line #27
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #28
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rcx
-
-arg_type = 2
-Line #29
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #30
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #31
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #32
-looking for const_string:
-looking for label...
-	instr: print
-	arg: one_root
-
-finding string...
-found: one_root
-Line #33
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #34
-looking for const_string:
-looking for label...
-	instr: end
-	arg: 
-
-Line #35
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #36
-looking for const_string:
-looking for label...
-Line #37
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #38
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rcx
-
-arg_type = 2
-Line #39
-looking for const_string:
-looking for label...
-	instr: je
-	arg: inf_roots
-
-finding label....
-found: inf_roots
-Line #40
-looking for const_string:
-looking for label...
-	instr: print
-	arg: no_roots
-
-finding string...
-found: no_roots
-Line #41
-looking for const_string:
-looking for label...
-	instr: end
-	arg: 
-
-Line #42
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #43
-looking for const_string:
-looking for label...
-Line #44
-looking for const_string:
-looking for label...
-	instr: print
-	arg: inf_roots
-
-finding string...
-found: inf_roots
-Line #45
-looking for const_string:
-looking for label...
-	instr: end
-	arg: 
-
-Line #46
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #47
-looking for const_string:
-looking for label...
-Line #48
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 4
-
-arg_type = 22
-Line #49
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #50
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rcx
-
-arg_type = 2
-Line #51
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #52
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #53
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #54
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #55
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #56
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #57
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #58
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #59
-looking for const_string:
-looking for label...
-	instr: pop
-	arg: rdx
-
-Line #60
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #61
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0.000001
-
-arg_type = 22
-Line #62
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #63
-looking for const_string:
-looking for label...
-	instr: abs
-	arg: 
-
-Line #64
-looking for const_string:
-looking for label...
-	instr: jb
-	arg: matching
-
-finding label....
-found: matching
-Line #65
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #66
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #67
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #68
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #69
-looking for const_string:
-looking for label...
-	instr: jb
-	arg: two_real
-
-finding label....
-found: two_real
-Line #70
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #71
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #72
-looking for const_string:
-looking for label...
-	instr: print
-	arg: two_complex
-
-finding string...
-found: two_complex
-Line #73
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #74
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #75
-looking for const_string:
-looking for label...
-	instr: push
-	arg: -1
-
-arg_type = 22
-Line #76
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #77
-looking for const_string:
-looking for label...
-	instr: sqrt
-	arg: 
-
-Line #78
-looking for const_string:
-looking for label...
-	instr: pop
-	arg: rdx
-
-Line #79
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #80
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #81
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #82
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #83
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #84
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #85
-looking for const_string:
-looking for label...
-	instr: push
-	arg: -1
-
-arg_type = 22
-Line #86
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #87
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #88
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #89
-looking for const_string:
-looking for label...
-	instr: print
-	arg: re
-
-finding string...
-found: re
-Line #90
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #91
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #92
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #93
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #94
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #95
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #96
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #97
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #98
-looking for const_string:
-looking for label...
-	instr: print
-	arg: im
-
-finding string...
-found: im
-Line #99
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #100
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #101
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #102
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #103
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #104
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #105
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #106
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #107
-looking for const_string:
-looking for label...
-	instr: push
-	arg: -1
-
-arg_type = 22
-Line #108
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #109
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #110
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #111
-looking for const_string:
-looking for label...
-	instr: print
-	arg: re
-
-finding string...
-found: re
-Line #112
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #113
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #114
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #115
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #116
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #117
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #118
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #119
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #120
-looking for const_string:
-looking for label...
-	instr: push
-	arg: -1
-
-arg_type = 22
-Line #121
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #122
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #123
-looking for const_string:
-looking for label...
-	instr: print
-	arg: im
-
-finding string...
-found: im
-Line #124
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #125
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #126
-looking for const_string:
-looking for label...
-	instr: end
-	arg: 
-
-Line #127
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #128
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #129
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #130
-looking for const_string:
-looking for label...
-Line #131
-looking for const_string:
-looking for label...
-	instr: print
-	arg: two_real
-
-finding string...
-found: two_real
-Line #132
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #133
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #134
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #135
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #136
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #137
-looking for const_string:
-looking for label...
-	instr: sqrt
-	arg: 
-
-Line #138
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #139
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #140
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #141
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #142
-looking for const_string:
-looking for label...
-	instr: add
-	arg: 
-
-com: arg_type = 21
-Line #143
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #144
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #145
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #146
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #147
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #148
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #149
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #150
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rdx
-
-arg_type = 3
-Line #151
-looking for const_string:
-looking for label...
-	instr: sqrt
-	arg: 
-
-Line #152
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #153
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #154
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #155
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #156
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #157
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #158
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #159
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #160
-looking for const_string:
-looking for label...
-	instr: end
-	arg: 
-
-Line #161
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #162
-looking for const_string:
-looking for label...
-Line #163
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #164
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 2
-
-arg_type = 22
-Line #165
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rax
-
-arg_type = 0
-Line #166
-looking for const_string:
-looking for label...
-	instr: mul
-	arg: 
-
-Line #167
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #168
-looking for const_string:
-looking for label...
-	instr: push
-	arg: rbx
-
-arg_type = 1
-Line #169
-looking for const_string:
-looking for label...
-	instr: push
-	arg: 0
-
-arg_type = 22
-Line #170
-looking for const_string:
-looking for label...
-	instr: sub
-	arg: 
-
-Line #171
-looking for const_string:
-looking for label...
-	instr: 
-	arg: 
-
-Line #172
-looking for const_string:
-looking for label...
-	instr: div
-	arg: 
-
-Line #173
-looking for const_string:
-looking for label...
-	instr: print
-	arg: matching
-
-finding string...
-found: matching
-Line #174
-looking for const_string:
-looking for label...
-	instr: out
-	arg: 
-
-Line #175
-looking for const_string:
-looking for label...
-	instr: end
+	instr: ret
 	arg: 
 

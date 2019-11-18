@@ -1,4 +1,3 @@
-#if 0
 /*typical command:  instr + (cntrl) + (arg)
                     1 byte   1 byte   1-8 bytes 
 */
@@ -8,7 +7,6 @@
 
 
 /*cntrl values*/
-#endif
 
 #ifndef CONST_H
 

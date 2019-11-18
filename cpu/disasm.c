@@ -3,7 +3,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include "stack.c"
+#include "stack.h"
 #include "file_functions.c"
 #include "const.h"
 
@@ -97,6 +97,7 @@ int disasm(const char *input, const char *output){
 				fprintf(file, "*****unknown instr!*****\n");
 
 				break;
+			#undef INSTR_DEF
 		}
 	}
 

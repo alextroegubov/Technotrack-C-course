@@ -3,7 +3,7 @@
 #include<string.h>
 
 #include "file_functions.c"
-#include "stack.c"
+#include "stack.h"
 #include "const.h"
 #include "compiler.h"
 
