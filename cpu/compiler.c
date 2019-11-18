@@ -9,7 +9,6 @@
 
 #define DEBUG
 
-
 /**
 * Compiles input file to output file
 *
@@ -27,20 +26,6 @@ int compile(const char *input, const char *output, const char *log_file){
 
 	assert(log_file);
 #endif
-
-	if(!input){
-
-		printf("Compilation error: no input file!\n");
-
-		return -2;
-	}
-
-	if(!output){
-
-		printf("Compilation error: no output file!\n");
-
-		return -1;
-	}
 
 	printf("Compilation started...\n");
 
@@ -80,6 +65,8 @@ int compile(const char *input, const char *output, const char *log_file){
 	if(fill_transl_buf(&cpu_instr, lined_buffer)){
 		
 		printf("Compilation error: compile: can't translate file!\n");
+		
+		clean_after_compilation(text_buffer, lined_buffer, &cpu_instr);
 
 		return 3;
 	}
@@ -138,16 +125,16 @@ int init_transl_buffer(Transl_buf *cpu_instr, const char *log_file){
 
 	for(int i = 0; i < MAX_NUMBER_OF_LABELS; i++){
 		
-		bzero(cpu_instr->labels[i].name, MAX_LABEL_LEN);
+		memset(cpu_instr->labels[i].name, '\0', MAX_LABEL_LEN);
 
 		cpu_instr->labels[i].l_pc = INV_PC;
 	}
 	
 	for(int i = 0; i < MAX_NUMBER_OF_CONST_STRINGS; i++){
 
-		bzero(cpu_instr->strings[i].name, MAX_CONST_STRING_NAME);
-
-		bzero(cpu_instr->strings[i].value, MAX_CONST_STRING_LEN);
+		memset(cpu_instr->strings[i].name, '\0', MAX_CONST_STRING_NAME);
+		
+		memset(cpu_instr->strings[i].value, '\0', MAX_CONST_STRING_LEN);
 	}
 
 	return 0;
@@ -263,13 +250,15 @@ int translate_line(char *line, Transl_buf *cpu_instr){
 	int arg_type = 0;// define_argument(arg_buf);
 
 	#define INSTR_DEF(name, num, code_comp, code_cpu, code_disasm) \
-		if(!strcmp(name, instr_buf)){ \
-			code_comp; \
-			return 0; \
-		} \
+	if(!strcmp(name, instr_buf)){ \
+		code_comp; \
+		return 0; \
+	} \
 
 	#include "commands.h"
-	
+
+	#undef INSTR_DEF
+
 	if(instr_buf[0] != '\0'){ //to skip lines with ; at the beginning
 		
 		printf("Compilation error: translate_line: undefined instuction:\n %s\n", instr_buf);
@@ -359,6 +348,7 @@ int look_for_const_string(char *line, Transl_buf *cpu_instr){
 #ifdef DEBUG
  		fprintf(cpu_instr->log_file, "found: \n");
 #endif		
+
 		if(compilation_step == second)
 			return 0;
 
@@ -369,18 +359,39 @@ int look_for_const_string(char *line, Transl_buf *cpu_instr){
 			return 1;
 		}
 		
-		if(take_const_string_name((const char *)line, cpu_instr)){
-		
-			printf("Compilation error: look_for_const_string: can't take string name!\n");
+		char name[MAX_LINE_SIZE] = {'\0'};
+
+		char value[MAX_LINE_SIZE] = {'\0'};
+
+		if(sscanf(line, " const_string: %s '%[0-9 a-z A-Z _]' ", name, value) != 2){
+			
+			printf("Compilation error: look_for_const_string: can't take const string!\n" "%s\n", line);
 
 			return 2;
 		}
-		
-		if(take_const_string_value((const char*)line, cpu_instr)){
-
-			printf("Compilation error: look_for_const_string: can't take string value!\n");
+		else if(strlen(name) > MAX_CONST_STRING_NAME){
+			
+			printf("Compilation error: look_for_const_string: too long const_string name!\n %s \n", line);
 
 			return 3;
+		}
+		else if(strlen(value) > MAX_CONST_STRING_LEN){
+			
+			printf("Compilation error: take_const_string_value: too long const string!\n %s \n", line);
+
+			return 4;		
+		}
+		else{
+	
+			strncpy(cpu_instr->strings[cpu_instr->string_pos].name, name, strlen(name));
+
+			strncpy(cpu_instr->strings[cpu_instr->string_pos].value, value, strlen(value));
+				
+			#ifdef DEBUG
+			fprintf(cpu_instr->log_file, "\tstring: %s\n"	"\tvalue: %s\n", 
+					cpu_instr->strings[cpu_instr->string_pos].name, 
+					cpu_instr->strings[cpu_instr->string_pos].value);
+			#endif
 		}
 
 		cpu_instr->string_pos++;
@@ -389,121 +400,6 @@ int look_for_const_string(char *line, Transl_buf *cpu_instr){
 	}
 
 	return NO_CONST_STRING;
-}
-
-
-int take_const_string_name(const char *line, Transl_buf *cpu_instr){
-
-#ifdef DEBUG
-	assert(line);
-	
-	assert(cpu_instr);
-#endif
-
-	int pos1 = 0, pos2 = 0;
-
-	pos1 = strchr(line, ':') - line + 1;
-
-	for(int i = 0; i < pos1 - strlen("const_string:"); i++){
-		if(!isspace(line[i])){
-				
-			printf("Compilation error: take_const_string_name: unexpected symbols(left)!\n %s \n", line);
-			
-			return 1;
-		}
-	}
-
-	while(isspace(line[pos1]))
-		pos1++;
-		
-	char sym = line[pos2];
-
-	for(pos2 = pos1; isalnum(sym) || sym == '_'; sym = line[++pos2])
-		;
-
-#ifdef DEBUG
-	fprintf(cpu_instr->log_file, "\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
-#endif
-
-	if(pos1 == pos2){
-	
-		printf("Compilation error: look_for_const_string: "
-					"can't identify const string: %s\n", line);
-
-		return 2;
-	}
-
-	if(pos2 - pos1 > MAX_CONST_STRING_NAME){
-			
-		printf("Compilation error: look_for_const_string: too long const_string name!\n %s \n", line);
-
-		return 3;
-	}
-		
-	/*check the rest of string until 'value'*/
-	int pos3 = pos2;
-
-	for(;line[pos3] != '\''; pos3++){
-		if(!isspace(line[pos3])){
-				
-			printf("Compilation error: take_const_string_name: unexpected symbols(middle)!\n %s \n", line);
-			
-			return 4;
-		}
-	}
-	//put name
-	strncpy(cpu_instr->strings[cpu_instr->string_pos].name, (const char*)(line + pos1), pos2 - pos1);
-
-	return 0;
-}
-
-
-int take_const_string_value(const char *line, Transl_buf *cpu_instr){
-
-#ifdef DEBUG
-	assert(line);
-
-	assert(cpu_instr);
-#endif
-
-	int pos1 = 0, pos2 = 0;
-
-	pos1 = strchr(line + pos2, '\'') - line;
-
-	pos2 = strchr(line + pos1 + 1, '\'') - line;
-
-	if(pos2 - pos1 - 1 > MAX_CONST_STRING_LEN){
-			
-		printf("Compilation error: take_const_string_value: too long const string\n %s \n", line);
-			
-		return 1;
-	}
-		
-	//put value
-	strncpy(cpu_instr->strings[cpu_instr->string_pos].value, (const char*)(line + pos1 + 1), pos2 - pos1 - 1);
-
-	/*check the rest of the string*/
-
-	pos2 += 1;
-
-	for(; line[pos2] != '\0'; pos2++){
-		if(!isspace(line[pos2])){
-			
-			printf("Compilation error: take_const_string_value: unexpected symbols(right)!\n %s \n", line);
-
-			return 2;	
-		}
-	}
-
-#ifdef DEBUG
-	fprintf(cpu_instr->log_file, "\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
-	
-	fprintf(cpu_instr->log_file, "\tstring: %s\n"	"\tvalue: %s\n", 
-			cpu_instr->strings[cpu_instr->string_pos].name, 
-			cpu_instr->strings[cpu_instr->string_pos].value);
-#endif
-	
-	return 0;
 }
 
 /**
@@ -588,78 +484,36 @@ int look_for_label(const char *line, Transl_buf *cpu_instr){
 	fprintf(cpu_instr->log_file, "looking for label...\n");
 #endif
 
-/*fixme: separate into functions like look_for_const_string*/
-	int pos1 = 0, pos2 = 0;;
-
 	if(strchr(line, ':')){
 
 		if(compilation_step == second)
 			return 0;
-
-		pos2 = strchr(line, ':') - line;
 		
-		for(pos1 = pos2 - 1; (pos1 >= 0) && isgraph(line[pos1]); pos1--)
-			;
+		char label[MAX_LINE_SIZE] = {'\0'};
 
-		pos1++;
-
-	#ifdef DEBUG
-		fprintf(cpu_instr->log_file, "\tpos1 = %c, pos2 = %c\n", line[pos1], line[pos2]);
-	#endif
-
-		if(pos1 == pos2){
-
-			printf("Compilation error: look_for_label:\n"
-					"Can't identify label: %s\n", line);
-
-			return 1;
-		}
-
-		if(pos2 - pos1 > MAX_LABEL_LEN){
-
-			printf("Compilation error: look_for_label: too long label\n %s \n", line);
+		if(sscanf(line, " %[0-9a-zA-Z_]: ", label) != 1){
+			
+			printf("Compilation error: look_for_const_string: can't take const string!\n" "%s\n", line);
 
 			return 2;
 		}
-
-		//put name
-		strncpy(cpu_instr->labels[cpu_instr->label_pos].name, (const char*) line + pos1, pos2 - pos1);
-	
-		/*checking the rest of the line (right)*/
-
-		pos2 += 1;
-
-		for(;line[pos2] != '\0'; pos2++){
-
-			if(!isspace(line[pos2])){
-
-				printf("Compilation error: look_for_label: unexpected symbols(right):\n" "%s \n", line);
-
-				return 3;
-			}
-		}
-
-		/*checking the rest of the line (left)*/
-		if(&line[pos1] != line)
-			pos1 -= 1;
-
-		for(; &line[pos1] != line; pos1--){		
+		else if(strlen(label) > MAX_LABEL_LEN){
 			
-			if(!isspace(line[pos1])){
+			printf("Compilation error: look_for_const_string: too long const_string name!\n %s \n", line);
 
-				printf("Compilation error: look_for_label: unexpected symbols(left):\n" "%s \n", line);
-
-				return 4;
-			}
+			return 3;
 		}
+		else
+			strncpy(cpu_instr->labels[cpu_instr->label_pos].name, label, strlen(label));
+		
 		//put address
 		cpu_instr->labels[cpu_instr->label_pos].l_pc = cpu_instr->pos;
 
-	#ifdef DEBUG
+		#ifdef DEBUG
 		fprintf(cpu_instr->log_file, "\tlabel: %s\n" "\taddr: %d\n", 
 				cpu_instr->labels[cpu_instr->label_pos].name, 
 				cpu_instr->labels[cpu_instr->label_pos].l_pc);
-	#endif
+		#endif
 
 		cpu_instr->label_pos++;
 
@@ -718,54 +572,32 @@ int fill_buffers(char *line, char *instr_buf, char *arg_buf){
 	assert(arg_buf);
 #endif
 
-	int pos1 = 0, pos2 = 0;
+	char instr_buf_local[MAX_LINE_SIZE] = {'\0'};
 
-	/*deleting white spaces*/
-	while(isspace(line[pos1]))
-		pos1++;
+	char arg_buf_local[MAX_LINE_SIZE] = {'\0'};
 
-	/*taking instruction*/
-	for(pos2 = pos1; isalpha(line[pos2]); pos2++)
-		;
-	
-	if(pos2 - pos1 > MAX_INSTR_SIZE){
+	sscanf(line, " %s %s ", instr_buf_local, arg_buf_local);
 
-		printf("Compilation error: fill_buffers: too long instruction\n %s \n", line);
+	if(strlen(instr_buf) > MAX_INSTR_SIZE){
 
-		return 1;
+		 printf("Compilation error: fill_buffers: too long instruction\n %s \n", line);
+
+		 return 1;
 	}
-
-	strncpy(instr_buf,(const char*) line + pos1, pos2 - pos1);
-	
-	/*deleting white spaces*/
-	while(isspace(line[pos2]))
-		pos2++;
-	
-	/*taking argument*/
-	for(pos1 = pos2; isgraph(line[pos1]); pos1++)
-		;
-
-	if(pos1 - pos2 > MAX_ARG_SIZE){
-
+	else if(strlen(arg_buf) > MAX_ARG_SIZE){
+		
 		printf("Compilation error: fill_buffers: too long argument\n %s \n", line);
 
 		return 2;
 	}
+	else{
+		
+		strncpy(arg_buf, arg_buf_local, strlen(arg_buf_local));
 
-	strncpy(arg_buf, (const char*)line + pos2, pos1 - pos2);
+		strncpy(instr_buf, instr_buf_local, strlen(instr_buf_local));
 
-	/*checking the rest of the line*/
-	for(;line[pos1] != '\0'; pos1++){	
-
-		if(!isspace(line[pos1])){
-
-			printf("Compilation error: fill_buffers: unexpected symbols(right):\n %s \n", line);
-
-			return 3;
-		}
+		return 0;
 	}
-
-	return 0;
 }
 
 

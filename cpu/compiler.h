@@ -24,9 +24,9 @@
 #define MAX_NUMBER_OF_LABELS 50     //max number of labels in code
 #define MAX_LABEL_LEN 30            //max length of label's name
 
-#define MAX_CONST_STRING_LEN 50         //max length of constant string
+#define MAX_CONST_STRING_LEN 45         //max length of constant string
 #define MAX_NUMBER_OF_CONST_STRINGS 20  //max number of constant string in asm code
-#define MAX_CONST_STRING_NAME 50        //max length of constant string name
+#define MAX_CONST_STRING_NAME 45        //max length of constant string name
 
 #define NO_LABEL 10			//no label in a line
 #define NO_CONST_STRING 10	//no const_string in a line
@@ -94,10 +94,6 @@ int translate_line(char *_line, Transl_buf *cpu_instr);
 int check_and_transform_line(char *line, Transl_buf *cpu_instr);
 
 int look_for_const_string(char *line, Transl_buf *cpu_instr);
-
-int take_const_string_name(const char *line, Transl_buf *cpu_instr);
-
-int take_const_string_value(const char *line, Transl_buf *cpu_instr);
 
 char *find_const_string(Transl_buf *cpu_instr, char *arg_buf, int *len);
 
