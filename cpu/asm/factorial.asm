@@ -9,7 +9,7 @@ out
 end
 
 factorial: 
-; rax - result, rcx - current number
+;  rcx - current number
 	push rcx
 	push 1
 	jae ret1

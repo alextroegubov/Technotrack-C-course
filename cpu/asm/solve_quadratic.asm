@@ -59,7 +59,7 @@ solve_quadratic:
 	sub
 	pop rdx ; D = rdx
 
-	push 0.000001
+	push 0.000001 ; epsilon
 	push rdx
 	abs
 	jb matching ; D = 0
