@@ -21,6 +21,7 @@
 		jmp <label>
 
 		A label must end with ':' without any space between <label's name> and ':'.
+		Only digits, letters and '_' may be used in <label>
 
 	2) To print a constant string you should write it at the beginnig of the program in this way:
 
