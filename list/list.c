@@ -3,57 +3,14 @@
 #include<stdio.h>
 #include<inttypes.h>
 
-#define POISON_PHYS -1 //for phys addr
-#define DATA_POISON -999 //for empty data cells
-#define NUM_POISON -1
+//make sort and hash
 
-
-
-static const int canary1 = 0xAABBCCDD;
-static const int canary2 = 0xEEFFEEFF;
-
-
-enum error{
-	init_val1 = 50,
-	init_val2 = 51
-
-};
-
-typedef int data_t;
-
-struct List{
-
-	int canary1;
-
-	int capacity;
-
-	int size;
-
-	data_t *data;
-
-	int head; //phys number
-
-	int *next;
-
-	int tail; //phys number
-
-	int *prev;
-
-	int free; //phys number
-
-	char sorted;// yes/no
-
-	const char *log_file;
-
-	const char *graph_image;
-	
-	enum error errno;
-	
-	int canary2;
-};
-
-typedef struct List List;
-
+#define _ERR(A) \
+	{\
+		lst->errno = A;\
+		\
+		return 1;\
+	}
 
 void init_free_field_in_list(const List *lst){
 	
@@ -61,11 +18,11 @@ void init_free_field_in_list(const List *lst){
 
 	for(int i = 1; i <= lst->capacity; i++){
 
-		lst->data[i] = DATA_POISON; //999
+		lst->data[i] = DATA_POISON; //999 //memset
 
-		lst->next[i] = i + 1;
+		lst->next[i] = i + 1; //move to list_create
 
-		lst->prev[i] = POISON_PHYS; //-1
+		lst->prev[i] = POISON_PHYS; //-1 //memset
 	}
 	
 	lst->next[lst->capacity] = 0;
@@ -111,7 +68,7 @@ List *list_create(const List *lst, const int capacity, const char* graph_image){
 	init_free_field_in_list(lst);
 	//if
 
-	lst->errno = init_val1;
+	lst->errno = NO_ERROR;
 
 	return lst;
 }
@@ -121,15 +78,12 @@ int list_insert_before(const List *lst, const int pos, const data_t value){
 	
 	assert(lst);
 
-	if(pos > lst->size){
+	if(pos > lst->size || pos < 0 || (lst->head != 0 && pos == 0) ||
+		(pos != head && prev[pos] == POISON_PHYS)){
 
 		printf("Error: can't insert after %d element: list size = %d\n", pos, lst->size);
 
-		return 0;
-	}
-	else if(pos < 0 ||  (lst->head != 0 && pos == 0) ){
-
-		printf("Error: incorrect value for position: %d\n", pos);
+		lst->errno = INSERT_BEFORE_ERR;
 
 		return 0;
 	}
@@ -176,7 +130,6 @@ int list_insert_before(const List *lst, const int pos, const data_t value){
 		lst->prev[pos] = new;
 
 		printf("inserted: middle\n");
-
 	}
 
 	lst->size++;
@@ -185,20 +138,16 @@ int list_insert_before(const List *lst, const int pos, const data_t value){
 }
 
 
-
 int list_insert_after(const List *lst, const int pos, const data_t value){
 	
 	assert(lst);
 
-	if(pos > lst->size){
+	if(pos > lst->capacity || pos < 0 || (lst->tail != 0 && pos == 0) ||
+		(pos != head && prev[pos] == POISON_PHYS)){
 
-		printf("Error: can't insert after %d element: list size = %d\n", pos, lst->size);
+		printf("Error: list_insert_after: can't insert after %d element!\n", pos);
 
-		return 0;
-	}
-	else if(pos < 0 ||  (lst->tail != 0 && pos == 0) ){
-
-		printf("Error: incorrect value for position: %d\n", pos);
+		lst->errno = INSERT_AFTER_ERR;
 
 		return 0;
 	}
@@ -257,21 +206,20 @@ int list_insert_after(const List *lst, const int pos, const data_t value){
 int list_delete(const List *lst, const int pos){
 	
 	assert(lst);
-
-	assert(pos > 0);
 	
-	if(pos > lst->size){
-
-		printf("Error: can't delete %d element: size = %d\n", pos, lst->size);
-
-		return -1;
-	}
-
 	if(pos == lst->head){
 
 		lst->head = lst->next[pos];
 
 		lst->prev[lst->next[pos]] = POISON_PHYS;
+	}
+	else if(pos > lst->size || pos <= 0 || lst->prev[pos] == POISON_PHYS){
+
+		printf("Error: list_delete: can't delete %d element!\n", pos);
+
+		lst->errno = DEL_ERR;
+
+		return -1;
 	}
 	else if(pos == lst->tail){
 		
@@ -292,7 +240,7 @@ int list_delete(const List *lst, const int pos){
 	
 	lst->free = pos;
 
-	lst--;
+	lst->size--;
 
 	return 0;	
 }
@@ -330,7 +278,7 @@ int list_ok(List *lst){
 #endif
 
 #ifdef HASH_P
-	if(lst->hash != list_hash)
+	if(lst->hash != list_hash(lst))
 		_ERR(HASH_ERR);
 #endif
 
@@ -367,6 +315,25 @@ int list_ok(List *lst){
 	else if(((lst->head == 0 || lst->tail == 0) && lst->size != 0) || (lst->head == lst->tail && lst->size != 1))
 		_ERR(HEAD_TAIL_ERR);
 
+	int step = 0;
+
+	//checking free chain: number of free blocks = capacity - size
+	for(int i = free; lst->next[i] != POISON_PHYS; i = lst->next[i]){
+
+		//checking circularity
+		if(step > lst->capacity - lst->size)
+			_ERR(FREE_CIRCULARITY_ERR);
+
+		if(lst->prev[i] != POISON_PHYS)
+			_ERR(FREE_PREV_ERR);
+
+		step++;
+	}
+
+	if(step != capacity - size)
+		_ERR(FREE_NEQ_LEN_ERR);
+
+	//checking chain from head to tail
 	if(lst->head != 0 && lst->tail != 0){
 
 		if(lst->prev[lst->head] != POISON_PHYS)
@@ -374,55 +341,147 @@ int list_ok(List *lst){
 		
 		else if(lst->next[lst->tail] != POISON_PHYS)
 			_ERR(TAIL_NEXT_ERR);
-		
-		for(int i = lst->next[lst->head]; i != lst->tail; i = lst->next[i]){
+
+		//checking that phys in next and prev are correct from head to tail	
+		for(int i = lst->next[lst->head], int step = 0; i != lst->tail; i = lst->next[i], step++){
 			
 			if(i <= 0 || i > lst->capacity)
 				_ERR(INVALID_NEXT_ERR);
 
 			if(lst->prev[i] <= 0 || lst->prev[i] > capacity)
 				_ERR(INVALID_PREV_ERR);
-		}
-	}
-	else{
 
-		for(int i = 1; i <= lst->capacity; i++){
-		
-			if(lst->prev[i] != POISON_PHYS)
-				_ERR(INVALID_PREV_ERR);
-			/*next?*/
+			//checking circularity: from head to tail = size
+			if(step > lst->size)
+				_ERR(HEAD_TAIL_CIRCULARITY_ERR);
 		}
+		//checking circularity: from head to tail = size
+		if(step != lst->size)
+			_ERR(SIZE_NEQ_LEN_ERR);
 	}
-	/*зацикливание?*/
+	//if one of head/tail = 0, then list is completely empty and all blocks
+	//were checked during free checking
+
+	fprintf(lst->log_file, "list_ok: no errors detected\n");
+
+	return 0;
 }
 
 void list_sort(List *lst){
 	;
 }
 
-int list_find_log_by_phys(List *lst, int phys){
+//remove errror from delete, insert after and insert before
+
+int list_find_log_by_phys(const List *lst, const int phys_n){
+
+	assert(lst);
+
+	if(phys_n > capacity || (phys_n != lst->head && lst-prev[phys_n]) == POISON_PHYS){
+		
+		printf("Error: list_find_log_by_phis: invalid phys %d\n", phys_n);
+
+		return -1;
+	}
+
+	for(int i = lst->head, int log_n = 1; i != lst->tail; i = lst->next[i], log_n++){
+
+		if(phys == i)
+			return log_n;
+	}
+
 	return 0;
 }
 
-int list_dump(List *lst){
-	
+
+int list_dump(const List *lst){
+
 	assert(lst);
 
+	assert(lst->log_file);
 
+	FILE *file = lst->log_file;
+	//if
+	
+	fprintf(file, 	"\t\t\t\t\t LIST_DUMP:\n"
+					"List \"%s\" [%p] (%s)\n" "{\n"
+					"\t canary1 = %d (%s)\n"
+					"\t capacity = %d\n"
+					"\t size = %d\n"
+					"\t head = %d\n"
+					"\t tail = %d\n"
+					"\t next = %p\n"
+					"\t prev = %p\n"
+					"\t free = %d\n"
+					"\t sorted = %d\n"
+					"\t log_file = %p\n"
+					"\t list_name = %s\n"
+					"\t graph_image = %s\n"
+					"\t hash = %ld\n"
+					"\t errno = %s\n"
+					"\t canary2 = %d (%s)\n",
+					lst->list_name, &lst,
+					lst->error == NO_ERROR ? "OK" : "ERROR!",
+					lst->canary1, 
+					lst->canary1 == list_canary1 ? "OK" : "ERROR!",
+					lst->capacity, lst->size, lst->head,
+					lst->tail, lst->next, lst->prev, 
+					lst->free, lst->sorted, lst->log_file,
+					lst->list_name, lst->graph_image,
+					lst->hash, list_print_error(lst->errno),
+					lst->canary2,
+					lst->canary2 == list_canary2 ? "OK" : "ERROR!");
+	
+	fflush(file);
 
+	if(data){
+	
+		fprintf(file, "\tdata[%p]:\n", lst->data);
+
+		for(int i = 1; i <= lst->capacity; i++){
+
+			fprintf(file, "\t\tdata = %d\n", lst->data[i]);
+
+			if(prev)
+				fprintf(file, "\t\tprev = %d\n", lst->prev[i]);
+			
+			if(next)
+				fprintf(file, "\t\tnext = %d\n", lst->next[i]);
+
+			printf(file, "\n");
+		}
+
+		if(next){
+			
+			fprintf(file, "\thead->tail:\n");
+
+			for(int i = lst->head; i != lst->tail; i = lst->next[i]){
+
+				fprintf(file, "\t\tdata = %d\n", lst->data[i]);
+
+				if(prev)
+					fprintf(file, "\t\tprev = %d\n", lst->prev[i]);
+
+				fprintf(file, "\t\tnext = %d\n", lst->next[i]);
+
+				printf(file, "\n");
+			}
+		}	
+	}
+
+	fprintf(file, "}\n");
+
+	fprintf(file, "list_dump: finished\n\n");
+
+	fflush(file);
+
+	return 0;
 }
 
-int list_save_graph(List *lst){
+
+int list_save_graph(const List *lst){
 
 	assert(lst);
-
-	printf(	"head = %5d, tail = %5d, free = %5d\n\n",
-			lst->head, lst->tail, lst->free);
-
-	for(int i = 1; i <= lst->capacity; i++)
-		printf("data = %5d; next = %5d; prev = %5d\n",
-				lst->data[i], lst->next[i], lst->prev[i]);
-	
 
 	FILE *file = fopen(lst->graph_image, "w");
 
@@ -449,10 +508,33 @@ int list_save_graph(List *lst){
 	return 0;
 }
 
-int list_hash(List *lst){
 
-	return 0;
+long int list_hash(const List *lst){
+
+	assert(lst);
+
+	long int hash = 0;
+
+	lst->hash = 0;
+
+	//hash struct
+	for(char *i = (char*)lst, int k = 0; i < (char*)((char*)lst + sizeof(List));i++, k++){
+		
+		hash = hash + *(i) * k;
+	}
+	
+	//hash prev, next, data
+	for(int i = 0; i <= lst->capacity; i++){
+
+		hash = hash + lst->data[i] * i + lst->prev[i] * (i + 1) * lst->next[i] * (i + 2);
+
+	}
+
+	lst->hash = hash;
+
+	return hash;
 }
+
 
 List *list_destroy(List *lst){
 
