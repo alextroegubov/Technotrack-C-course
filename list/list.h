@@ -1,36 +1,40 @@
-#define POISON_PHYS -1 //for phys addr
-#define DATA_POISON -999 //for empty data cells
+#define POISON_PHYS 0 //for phys addr
+#define DATA_POISON 0 //for empty data cells
 #define NUM_POISON -1
 
 static const int list_canary1 = 0xAABBCCDD;
 static const int list_canary2 = 0xEEFFEEFF;
 
 enum error{
-	NO_ERROR;
-	LOG_FILE_ERR;
-	CANARY_1_DEAD;
-	CANARY_2_DEAD;
-	HASH_ERR;
-	CAPACITY_ERR;
-	SIZE_ERR;
-	DATA_PTR_ERR;
-	HEAD_ERR;
-	NEXT_PTR_ERR;
-	TAIL_ERR;
-	PREV_ERR;
-	FREE_ERR;
-	SORTED_ERR;
-	GRAPH_IMAGE_ERR;
-	HEAD_TAIL_ERR;
-	FREE_CIRCULARITY_ERR;
-	FREE_PREV_ERR;
-	FREE_NEQ_LEN_ERR;
-	HEAT_PREV_ERR;
-	INVALID_NEXT_ERR;
-	INVALID_PREV_ERR;
-	HEAD_TAIL_CIRCULARITY_ERR;
-	SIZE_NEQ_LEN_ERR;
-	
+	NO_ERROR = 1,
+	LOG_FILE_ERR = 2,
+	CANARY_1_DEAD = 3,
+	CANARY_2_DEAD = 4,
+	HASH_ERR = 5,
+	CAPACITY_ERR = 6,
+	SIZE_ERR = 7,
+	DATA_PTR_ERR = 8,
+	HEAD_ERR = 9,
+	NEXT_ERR = 10,
+	TAIL_ERR = 11,
+	PREV_ERR = 12,
+	FREE_ERR = 13,
+	SORTED_ERR = 14,
+	HEAD_TAIL_ERR = 15,
+	FREE_CIRCULARITY_ERR = 16,
+	FREE_PREV_ERR = 17,
+	FREE_NEQ_LEN_ERR = 18,
+	HEAD_PREV_ERR = 19,
+	TAIL_NEXT_ERR = 20,
+	INVALID_NEXT_ERR = 21,
+	INVALID_PREV_ERR = 22,
+	HEAD_TAIL_CIRCULARITY_ERR = 23,
+	SIZE_NEQ_LEN_ERR = 24	
+};
+
+enum sorted_val{
+	NO = 0,
+	YES = 1
 };
 
 typedef int data_t;
@@ -55,45 +59,43 @@ struct List{
 
 	int free; //phys number
 
-	char sorted;// yes/no
+	enum sorted_val sorted;
 
 	FILE *log_file;
-
-	const char *list_name;
-
-	const char *graph_image;
 	
 	enum error errno;
 	
-	long int hash;
+	int hash;
 
 	int canary2;
 };
 typedef struct List List;
 
-void init_free_field_in_list(const List *lst);
 
-List *list_create(const List *lst, const int capacity, const char* graph_image);
+List *list_create(const char *log_file, const int capacity);
 
-int list_insert_before(const List *lst, const int pos, const data_t value);
+int list_insert_before(List *lst, const int pos, const data_t value);
 
-int list_insert_after(const List *lst, const int pos, const data_t value);
+int list_insert_after(List *lst, const int pos, const data_t value);
 
-int list_delete(const List *lst, const int pos);
+int list_delete(List *lst, const int pos);
 
-void list_sort(const List *lst);
+int list_sort(List *lst);
 
-int list_find_log_by_phys(const List *lst, const int phys);
+int list_find_log_by_phys(List *lst, const int phys);
 
-int list_save_graph(const List *lst);
+int list_find_phys_by_log(List *lst, const int log_n);
 
-int list_dump(const List *lst);
+int list_save_graph(const List *lst, const char *graph_image);
 
-int list_hash(const List *lst);
+int list_dump(const List *lst, const char *name);
+
+int list_hash(List *lst);
 
 List *list_destroy(List *lst);
 
-int list_ok(const List *lst);
+int list_ok(List *lst);
 
+int list_increase_capacity(List *lst, int new_cap);
 
-
+const char *list_print_error(enum error);
