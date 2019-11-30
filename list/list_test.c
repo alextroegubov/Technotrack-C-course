@@ -66,6 +66,8 @@ void test2(){
 
 	list_insert_after(lst, lst->head, -1);
 
+	list_save_graph(lst, "graph.dot");
+
 	unit_test(5, lst->head, 1);
 
 	unit_test(6, lst->tail, 5);

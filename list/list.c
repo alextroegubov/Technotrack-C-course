@@ -11,7 +11,6 @@
 			list_dump(lst, #lst);\
 		}\
 		else{\
-			fflush(stderr);\
 			assert(!"OK");\
 		}\
 	}\
@@ -138,7 +137,7 @@ int list_insert_before(List *lst, const int pos, const data_t value){
 
 	fprintf(lst->log_file, "\nlist_insert_before:\n");
 
-	if(pos > lst->size || pos < 0 || (lst->head != 0 && pos == 0) ||
+	if(pos > lst->capacity || pos < 0 || (lst->head != 0 && pos == 0) ||
 		(pos != lst->head && lst->prev[pos] == POISON_PHYS)){
 
 		fprintf(lst->log_file, "\tError: can't insert after %d element: list size = %d\n", pos, lst->size);
@@ -176,9 +175,14 @@ int list_insert_before(List *lst, const int pos, const data_t value){
 		lst->prev[lst->head] = new;
 
 		lst->head = new;
+
+		lst->sorted = NO;
 	}
 	else{ //in other cases:
 	
+		if(pos != lst->tail)
+			lst->sorted = NO;
+
 		lst->next[new] = pos;
 
 		lst->prev[new] = lst->prev[pos];
@@ -189,8 +193,6 @@ int list_insert_before(List *lst, const int pos, const data_t value){
 	}
 
 	lst->size++;
-
-	lst->sorted = NO;
 	
 	#ifdef HASH_P
 	list_hash(lst);
@@ -264,11 +266,11 @@ int list_insert_after(List *lst, const int pos, const data_t value){
 		lst->prev[lst->next[pos]] = new;	
 
 		lst->next[pos] = new;
+
+		lst->sorted = NO;
 	}
 
 	lst->size++;
-
-	lst->sorted = NO;
 
 	#ifdef HASH_P
 	list_hash(lst);
@@ -298,6 +300,8 @@ int list_delete(List *lst, const int pos){
 		lst->head = lst->next[pos];
 
 		lst->prev[lst->next[pos]] = POISON_PHYS;
+
+		lst->sorted = NO;
 	}
 	else if(pos > lst->capacity || pos <= 0 || lst->prev[pos] == POISON_PHYS){
 
@@ -318,6 +322,8 @@ int list_delete(List *lst, const int pos){
 		lst->prev[lst->next[pos]] = lst->prev[pos];
 
 		lst->prev[pos] = POISON_PHYS;
+
+		lst->sorted = NO;
 	}
 
 	lst->data[pos] = DATA_POISON;
@@ -329,8 +335,6 @@ int list_delete(List *lst, const int pos){
 	lst->free = pos;
 
 	lst->size--;
-
-	lst->sorted = NO;
 
 	#ifdef HASH_P
 	list_hash(lst);
@@ -361,13 +365,13 @@ int list_ok(List *lst){
 
 		fprintf(stderr, "%s", "No log file in list!\n");
 
-		return 2;
+		return 1;
 	}
 
 	fprintf(lst->log_file, "\n\n\t\tlist_ok:\n");
 
 	if(lst->errno != NO_ERROR)
-		return 3;
+		return 1;
 
 	if(lst->canary1 != list_canary1)		
 		_ERR(CANARY_1_DEAD)
@@ -404,7 +408,7 @@ int list_ok(List *lst){
 	else if(lst->free < 0 || lst->free > lst->capacity)
 		_ERR(FREE_ERR)
 	
-	else if(lst->sorted != 1 && lst->sorted != 0)
+	else if(lst->sorted != NO && lst->sorted != YES)
 		_ERR(SORTED_ERR)
 		
 	else if(((lst->head == 0 || lst->tail == 0) && lst->size != 0) || (lst->head == lst->tail && !(lst->size != 1 || lst->size != 0)))
@@ -458,7 +462,7 @@ int list_ok(List *lst){
 
 		step++;
 
-		//checking circularity: from head to tail = size
+		//from head to tail = size
 		if(step != lst->size)
 			_ERR(SIZE_NEQ_LEN_ERR)
 	}

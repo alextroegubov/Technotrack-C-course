@@ -360,6 +360,7 @@ long int stack_hash(Stack *stk){
 }
 #endif
 
+
 int create_log_file(const char *filename){
 
 	FILE *file = fopen(filename, "w");

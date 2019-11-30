@@ -1,4 +1,11 @@
 /*INSTR_DEF(name, num, code_comp, code_cpu, code_disasm)*/
+INSTR_DEF("meow", 24,
+		cpu_instr->buf[cpu_instr->pos++] = 24;
+	,
+		printf("meow\n");
+	,
+		fprintf(file, "meow [%d] \n", pc - 1);
+);
 
 INSTR_DEF("print", 23,
 		cpu_instr->buf[cpu_instr->pos++] = 23;
