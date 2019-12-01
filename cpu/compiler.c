@@ -675,7 +675,7 @@ void clean_after_compilation(char *text_buffer, char **lined_buffer, Transl_buf 
 
 int main(int argc, char *argv[]){
 	
-	if(compile(argv[1], argv[2], "cpu_log.txt"))
+	if(compile(argv[1], argv[2], "cpu.log"))
 		printf("Compilation failed!\n");
 
 	else 

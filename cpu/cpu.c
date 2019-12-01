@@ -11,7 +11,7 @@
 void destroy_cpu(Cpu *cpu){
 	
 	stack_destroy(cpu->stk);
-	
+
 	cpu->stk = NULL;
 
 	stack_destroy(cpu->stk_ret);
