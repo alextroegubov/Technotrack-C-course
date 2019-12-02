@@ -1,0 +1,1 @@
+(animal(green(jumps(frog(#)(#))(crocodile(#)(#)))(bark(dog(#)(#))(camel(#)(#))))(in(table(#)(#))(box(#)(#))))
