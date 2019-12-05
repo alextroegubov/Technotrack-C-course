@@ -1,1 +1,1 @@
-(animal(green(jumps(frog(#)(#))(crocodile(#)(#)))(bark(dog(#)(#))(camel(#)(#))))(in(table(#)(#))(box(#)(#))))
+(animal(dangerous(crocodile(#)(#))(frog(#)(#)))(square(box(#)(#))(tasty(a lot of bananas(#)(#))(table(#)(#)))))

@@ -2,120 +2,191 @@
 #include <assert.h>
 #include <string.h>
 #include "tree.h"
+#include "akinator.h"
 
 /*has at least one question in root*/
-int akinator(Tree *tree){
-	assert(tree);
+int akinator(const char *filename){
+	assert(filename);
+
+	Tree *tree = tree_create("akinator.log");
+	tree_read_from_file(tree, filename);
+
+	//changed args in function
+	//to do: think about the structure and the order of functions
 	
 	Node *cur_node = tree->root;
-	printf("BEGIN\n");
 	if(!cur_node){
 		printf("Error:akinator: no questions yet\n");
 		return 1;
 	}
+
+	akinator_play(tree);
+
+	tree_save(tree, "tree.txt");
+
+	tree_save_graph((const Tree *)tree, "tree.dot");
+
+	tree_destroy(tree);
+
+	return 0;
+}
+
+int akinator_play(Tree *tree){
+	assert(tree);
+
+	Node *cur_node = tree->root;
+	if(!cur_node){
+		printf("Error:akinator_play: empty tree\n");
+		return 1;
+	}
 	char answer[10] = {'\0'};
+	int got_answer = 0;
 
 	while(cur_node->left && cur_node->right){
 		printf(" %s?\n", cur_node->data);
-
-		printf("comparing\n");
-		printf("answer: %s\n", answer);
-
-		if(scanf(" %s", answer) != 1)
-			printf("I don't understand you. Try again\n");
-		else if(strcmp(answer, "yes") == 0){
-//				printf("your answer is %s\n", answer);
-				cur_node = cur_node->left;
+		got_answer = 0;
+//		printf("loop1, ans = %s\n", answer);
+		while(!got_answer){
+			
+//			printf("loop2, ans = %s\n", answer);
+			if(scanf(" %s", answer) != 1){
+				printf("I don't understand you. Try again\n");
+				clean_stdin();
+				memset(answer, '\0', 10);
 			}
-		else if(strcmp(answer, "no") == 0){
-//				printf("your answer is %s\n", answer);
-				cur_node = cur_node->right;
+			else if(strcmp(answer, "yes") == 0){
+					cur_node = cur_node->left;
+					got_answer = 1;
 			}
-		else
-			printf("I don't understand you. Try again\n");
-
-//		printf("next loop\n");
+			else if(strcmp(answer, "no") == 0){
+					cur_node = cur_node->right;
+					got_answer = 1;
+//					printf("answer = %s\n", answer);
+			}
+			else{
+				printf("I don't understand you. Try again\n");
+				clean_stdin();
+				memset(answer, '\0', 10);
+			}
+		}
 	}
+//	printf("ask\n");
 	ask_question(cur_node);
 
 	return 0;
 }
 
-int ask_question(Node *cur_node){
-	assert(cur_node);
-	printf("asking question\n");		
+int ask_question(Node *node){
+	assert(node);
+
 	char answer[100] = {'\0'};
-	char difference[100] = {'\0'};
+	char question[100] = {'\0'};
 
-	printf("Is it %s?\n", cur_node->data);
-	scanf(" %s", answer);
+	printf("Is it %s?\n", node->data);
+	scanf(" %s", answer);  //checks
 
+	//add while
 	if(strcmp(answer, "yes") == 0){
 		printf("Greate!\n");
 		return 0;
 	}
 	else if(strcmp(answer, "no") == 0){
 		printf("What is the correct answer?\n");
-		scanf(" %s", answer);
+		scanf(" %[0-9   a-z A-Z _ . , ]", answer);
 		printf("What is the difference between %s and %s?\n"
-				"%s...\n", cur_node->data, answer, answer);
-		scanf(" %[0-9   a-z A-Z _ . , ]", difference);
-	}
-	//else error;
-
-	Node *parent = cur_node->parent;
-	
-//	printf("*\n");
-//	printf("cur_node->parent = %p\n", cur_node->parent);
-//	printf("parent->left = %p, cur_node = %p\n", parent->left, cur_node);
-	if(cur_node == parent->left){
-//		printf("**\n");
-		parent->left = tree_create_node(parent, difference);
-		//yes branch
-		parent->left->left = tree_create_node(parent->left, answer);
-		//no branch
-		parent->left->right = cur_node;
-		cur_node->parent = parent->left;
-//		printf("***\n");
+				"%s is ...\n", node->data, answer, answer);
+		scanf(" %[0-9   a-z A-Z _ . , ]", question);
 	}
 	else{
-		parent->right = tree_create_node(parent, difference);
-		//yes branch
-		parent->right->left = tree_create_node(parent->right, answer);
-		//no branch
-		parent->right->right = cur_node;
-		cur_node->parent = parent->right;
+		printf("I don't understand you. Try again\n");
+		clean_stdin();
+		memset(answer, '\0', 100);
 	}
+
+	akinator_add_question(node, question, answer);
 
 	return 0;
 }
 
-int main(){
-	Tree *tree = tree_create("tree.log");
 
-	Node *cur_node = tree->root;
-	/*for(int i = 0; i <= 3; i++){
-		printf("iteration %d\n", i);
-		cur_node->left = tree_create_node(cur_node, "aa");
-		cur_node->right = tree_create_node(cur_node, "bb");
-		cur_node = cur_node->left;
-	}*/
-	printf("reading:\n");
-
-//	tree_read_from_file(tree, "tree.txt");	
-
-	tree->root = tree_create_node(tree->root, "animal");
-	tree->root->right = tree_create_node(tree->root, "box");
-	tree->root->left = tree_create_node(tree->root, "camel");
+int akinator_add_question(Node *node, char *question, char *answer){
+	assert(node);
+	assert(question);
+	assert(answer);
+	//printf("node data: %s\n", node->data);
 	
-	for(int i = 0; i < 5; i++){
-		akinator(tree);
+	Node *insert_node = NULL;
+	Node *new_node = NULL;
+
+
+	new_node = tree_create_node(node->parent, question);
+	new_node->left = tree_create_node(new_node, answer);
+	new_node->right = node;
+//	insert_node = new_node;//
+
+
+//	printf("new node: %s, right: %s, left: %s\n", insert_node->data, insert_node->right->data, insert_node->left->data);
+
+	
+	if(!node->parent){
+		;//		insert_node = node; //root, has no parent
 	}
+	else if(node == node->parent->left){
+//		insert_node = node->parent->left;
+		node->parent->left = new_node;
+		/*
+		parent->left = tree_create_node(parent, question);
+		//yes branch
+		parent->left->left = tree_create_node(parent->left, answer);
+		//no branch
+		parent->left->right = node;
+		cur_node->parent = parent->left;
+		*/
+	}
+	else{
+//		printf("node parent = %s\n", node->parent->data);
+//		insert_node = node->parent->right;
+		node->parent->right = new_node;
+	}
+
+	node->parent = new_node;
+
+	return 0;
+}
+
+void clean_stdin(){
+	char c = '\0';
+	do{
+		c = getchar();
+	}while(c != EOF || c != '\n');
+}
+
+int main(){
+//	Tree *tree = tree_create("tree.log");
+
+//	printf("reading:\n");
+//	tree_read_from_file(tree, "tree.txt");	
+//	printf("*\n");
+//	akinator_add_question(tree->root, "animal", "crocodile", "table");
+
+//	tree->root = tree_create_node(NULL, "animal");
+//	tree->root->right = tree_create_node(tree->root, "table");
+//	tree->root->left = tree_create_node(tree->root, "crocodile");
+//	printf("**\n");
+//	tree_save(tree, "tree.txt");
+
+//	tree_destroy(tree);
+//	return 0;
+
+	akinator("tree.txt");
+
+//	printf("***\n");
+/*
 	tree_visitor_in_order(tree->root, tree_print_node);
 
 	tree_save_graph((const Tree *)tree, "tree.dot");
+*/
+//	tree_destroy(tree);
 
-	tree_save(tree, "tree.txt");
-
-	tree_destroy(tree);
+	return 0;
 }

@@ -2,10 +2,9 @@
 
 #define TREE_H
 
-#define VALID_VAL 99
-//static char valid = 'F';
-static FILE *_tree_file_ = NULL;
+#define MAX_DATA_SIZE 100
 
+static FILE *_tree_file_ = NULL;
 typedef char* data_t;
 
 struct Node{
@@ -39,9 +38,7 @@ int tree_save(Tree *tree, const char *filename);
 int _tree_save(Node *node);
 Node *tree_read_node(Node *parent, char *buffer, int *pos);
 int tree_read_from_file(Tree *tree, const char *filename);
-char *create_text_buffer(const char *filename);
+char *tree_create_text_buffer(const char *filename);
 
-int ask_question(Node *node);
-int akinator(Tree *tree);
 #endif
 
