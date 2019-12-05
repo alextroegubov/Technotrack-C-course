@@ -4,25 +4,36 @@
 #include "tree.h"
 #include "akinator.h"
 
-/*has at least one question in root*/
-int akinator(const char *filename){
+Tree *akinator_create(const char *filename){
 	assert(filename);
 
 	Tree *tree = tree_create("akinator.log");
+	
 	tree_read_from_file(tree, filename);
 
-	//changed args in function
-	//to do: think about the structure and the order of functions
-	
-	Node *cur_node = tree->root;
-	if(!cur_node){
-		printf("Error:akinator: no questions yet\n");
-		return 1;
-	}
+	//doesn't work, think for differnt solution
+	//add asserts in add_q and create node
+	if(!tree->root) //no tree in file yet
+		akinator_add_question(tree->root, "animal", "crocodile", "window");
+//
+	assert(tree);
+	assert(tree->root);
+	assert(tree->root->left);
+	assert(tree->root->right);
+
+	return tree;
+}
+
+int akinator(const char *filename){
+	assert(filename);
+
+	Tree *tree = akinator_create(filename); 
 
 	akinator_play(tree);
 
 	tree_save(tree, "tree.txt");
+
+	//save in log_file
 
 	tree_save_graph((const Tree *)tree, "tree.dot");
 
@@ -31,10 +42,68 @@ int akinator(const char *filename){
 	return 0;
 }
 
+int akinator_add_question(Node *node, char *question, char *yes_answer, char *no_answer){
+	assert(question);
+	assert(yes_answer);
+	assert(no_answer);
+
+	Node *new_node = NULL;
+
+	if(node){
+		new_node = tree_create_node(node->parent, question);
+		new_node->left = tree_create_node(new_node, yes_answer);
+		new_node->right = tree_create_node(new_node, no_answer);
+		new_node->parent = node->parent;
+
+		if(node->parent->right == node)	
+			node->parent->right = new_node;
+		else 
+			node->parent->left = new_node;
+		
+		tree_free_node(node);
+	}
+	else{//root*******
+		node = tree_create_node((Node *)&node, question);
+		node->left = tree_create_node(new_node, yes_answer);
+		node->right = tree_create_node(new_node, no_answer);
+		node->parent = NULL;
+	}
+
+	return 0;
+}
+
+/*
+int akinator(const char *filename){
+	assert(filename);
+
+	tree *tree = tree_create("akinator.log");
+	tree_read_from_file(tree, filename);
+
+	//changed args in function
+	//to do: think about the structure and the order of functions
+	
+	node *cur_node = tree->root;
+	if(!cur_node){
+		printf("error:akinator: no questions yet\n");
+		return 1;
+	}
+
+	akinator_play(tree);
+
+	tree_save(tree, "tree.txt");
+
+	tree_save_graph((const tree *)tree, "tree.dot");
+
+	tree_destroy(tree);
+
+	return 0;
+}
+*/
 int akinator_play(Tree *tree){
 	assert(tree);
 
 	Node *cur_node = tree->root;
+
 	if(!cur_node){
 		printf("Error:akinator_play: empty tree\n");
 		return 1;
@@ -45,10 +114,9 @@ int akinator_play(Tree *tree){
 	while(cur_node->left && cur_node->right){
 		printf(" %s?\n", cur_node->data);
 		got_answer = 0;
-//		printf("loop1, ans = %s\n", answer);
+
 		while(!got_answer){
 			
-//			printf("loop2, ans = %s\n", answer);
 			if(scanf(" %s", answer) != 1){
 				printf("I don't understand you. Try again\n");
 				clean_stdin();
@@ -61,16 +129,15 @@ int akinator_play(Tree *tree){
 			else if(strcmp(answer, "no") == 0){
 					cur_node = cur_node->right;
 					got_answer = 1;
-//					printf("answer = %s\n", answer);
 			}
 			else{
 				printf("I don't understand you. Try again\n");
-				clean_stdin();
+				clean_stdin(); //test it
 				memset(answer, '\0', 10);
 			}
 		}
 	}
-//	printf("ask\n");
+
 	ask_question(cur_node);
 
 	return 0;
@@ -83,32 +150,36 @@ int ask_question(Node *node){
 	char question[100] = {'\0'};
 
 	printf("Is it %s?\n", node->data);
-	scanf(" %s", answer);  //checks
+	while(1){
+		scanf(" %s", answer);  //checks	
 
-	//add while
-	if(strcmp(answer, "yes") == 0){
-		printf("Greate!\n");
-		return 0;
-	}
-	else if(strcmp(answer, "no") == 0){
-		printf("What is the correct answer?\n");
-		scanf(" %[0-9   a-z A-Z _ . , ]", answer);
-		printf("What is the difference between %s and %s?\n"
-				"%s is ...\n", node->data, answer, answer);
-		scanf(" %[0-9   a-z A-Z _ . , ]", question);
-	}
-	else{
-		printf("I don't understand you. Try again\n");
-		clean_stdin();
-		memset(answer, '\0', 100);
+		if(strcmp(answer, "yes") == 0){
+			printf("Greate!\n");
+			return 0;
+		}
+		else if(strcmp(answer, "no") == 0){
+
+			printf("What is the correct answer?\n");
+			scanf(" %[0-9   a-z A-Z _ . , ]", answer);
+			printf("What is the difference between %s and %s?\n"
+					"%s is ...\n", node->data, answer, answer);
+
+			scanf(" %[0-9   a-z A-Z _ . , ]", question);
+			break;
+		}
+		else{
+			printf("I don't understand you. Try again\n");
+			clean_stdin();
+			memset(answer, '\0', 100);
+		}	
 	}
 
-	akinator_add_question(node, question, answer);
+	akinator_add_question(node, question, answer, node->data);
 
 	return 0;
 }
 
-
+/*
 int akinator_add_question(Node *node, char *question, char *answer){
 	assert(node);
 	assert(question);
@@ -134,14 +205,14 @@ int akinator_add_question(Node *node, char *question, char *answer){
 	else if(node == node->parent->left){
 //		insert_node = node->parent->left;
 		node->parent->left = new_node;
-		/*
+	*//*	
 		parent->left = tree_create_node(parent, question);
 		//yes branch
 		parent->left->left = tree_create_node(parent->left, answer);
 		//no branch
 		parent->left->right = node;
 		cur_node->parent = parent->left;
-		*/
+		*//*
 	}
 	else{
 //		printf("node parent = %s\n", node->parent->data);
@@ -153,12 +224,12 @@ int akinator_add_question(Node *node, char *question, char *answer){
 
 	return 0;
 }
-
+*/
 void clean_stdin(){
 	char c = '\0';
 	do{
 		c = getchar();
-	}while(c != EOF || c != '\n');
+	}while(c != EOF && c != '\n');
 }
 
 int main(){
@@ -178,7 +249,7 @@ int main(){
 //	tree_destroy(tree);
 //	return 0;
 
-	akinator("tree.txt");
+	akinator("tree1.txt");
 
 //	printf("***\n");
 /*

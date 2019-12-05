@@ -4,6 +4,7 @@
 #include <string.h>
 #include "tree.h"
 
+//creates without nodes//
 Tree *tree_create(const char *log_file_name){
 	Tree *tree = calloc(1, sizeof(Tree));
 	if(!tree){
@@ -142,7 +143,7 @@ int tree_print_node_graph(Node *node){
 		printf("Error: tree_print_node_graph:\n");
 		exit(-10);
 	}		
-	fprintf(_tree_file_, "%lu[label = %s]\n", (unsigned long int)node, node->data);
+	fprintf(_tree_file_, "%lu[label = \"%s\"]\n", (unsigned long int)node, node->data);
 
 	if(node->left)
 		fprintf(_tree_file_, "%lu->%lu;\n", (unsigned long int)node, (unsigned long int)node->left);
@@ -228,12 +229,12 @@ int tree_read_from_file(Tree *tree, const char *filename){
 	tree->root = tree_read_node(tree->root, buffer, &pos);
 	//...........................^^.......and assert in create_node//
 	free(buffer);
-
+/*
 	if(!tree->root){
 		printf("Error: tree_read_from_file\n");
 		return 2;
 	}
-
+*/
 	return 0;
 }
 
@@ -242,6 +243,9 @@ char *tree_create_text_buffer(const char *filename){
 
 	int nsym = 0;
 	FILE *file = fopen(filename, "r");
+
+	if(!file) 
+		return NULL;
 
 	if (fseek(file, 0, SEEK_END)){
 		fclose(file);

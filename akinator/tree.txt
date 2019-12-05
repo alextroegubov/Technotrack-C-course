@@ -1,1 +1,1 @@
-(animal(dangerous(crocodile(#)(#))(frog(#)(#)))(square(box(#)(#))(tasty(a lot of bananas(#)(#))(table(#)(#)))))
+(animal(dangerous(crocodile(#)(#))(frog(#)(#)))(square(larger than one box(larger than two boxes(three boxes(#)(#))(two box(#)(#)))(box(#)(#)))(tasty(a lot of bananas(#)(#))(table(#)(#)))))
