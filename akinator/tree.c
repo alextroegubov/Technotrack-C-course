@@ -4,25 +4,36 @@
 #include <string.h>
 #include "tree.h"
 
-//creates without nodes//
-Tree *tree_create(const char *log_file_name){
-	Tree *tree = calloc(1, sizeof(Tree));
-	if(!tree){
-		exit(-1);
-	}
-//	tree->root = tree_create_node(tree->root, "root");
-//	if(!tree->root){
-//		exit(-2);
-//	}
+int create_log_file(const char *filename){
+	assert(filename);
+
+	FILE *file = fopen(filename, "w");
 	
-	//log_file
-	//hash;
+	if(!file){
+		printf("Error: create_log_file\n");
+		return 1;
+	}
+
+	time_stamp(file);
+	fclose(file);
+
+	return 0;
+}
+
+//creates without nodes//
+Tree *tree_create(/*const char *log_file_name, */const char *general_log_file){
+	assert(general_log_file);
+	Tree *tree = calloc(1, sizeof(Tree));
+	if(!tree)
+		return NULL;
+
+	tree->general_log_file = general_log_file;
+//	tree->hash = tree_hash(tree);
+
 	return tree;
 }
 
 Node *tree_create_node(Node *parent, data_t value){
-//	assert(parent);
-
 	Node *new_node = calloc(1, sizeof(Node));
 
 	if(!new_node){
@@ -106,7 +117,6 @@ int tree_free_node(Node *node){
 	return 0;
 }
 
-
 int tree_print_node(Node *node){
 	assert(node);
 	
@@ -154,6 +164,24 @@ int tree_print_node_graph(Node *node){
 	return 0;
 }
 
+int time_stamp(FILE *file){
+	return 0;
+}
+
+int tree_save_general(Tree *tree, const char *filename){
+	assert(tree);
+	assert(filename);
+
+	_tree_file_ = fopen(filename, "a");	
+	time_stamp(_tree_file_);
+	_tree_save(tree->root);
+	
+	fprintf(_tree_file_, "\n\n\n");
+	fclose(_tree_file_);
+
+	return 0;
+}
+
 int tree_save(Tree *tree, const char *filename){
 	assert(tree);
 	assert(filename);
@@ -167,7 +195,6 @@ int tree_save(Tree *tree, const char *filename){
 }
 int _tree_save(Node *node){
 	assert(node);
-	assert(_tree_file_);
 
 	fprintf(_tree_file_, "(%s", node->data);
 
@@ -182,13 +209,14 @@ int _tree_save(Node *node){
 		fprintf(_tree_file_, "(#)");
 
 	fprintf(_tree_file_, ")");
+
 	return 0;
 }
 
 Node *tree_read_node(Node *parent, char *buffer, int *pos){
 	assert(buffer);
 	assert(pos);
-
+	
 	Node *new_node = NULL;
 
 	if(buffer[(*pos)++] != '('){
@@ -208,9 +236,9 @@ Node *tree_read_node(Node *parent, char *buffer, int *pos){
 		new_node->left = tree_read_node(new_node, buffer, pos);
 		new_node->right = tree_read_node(new_node, buffer, pos);	
 		(*pos)++;
-
-		return new_node;
 	}
+	
+	return new_node;
 }
 
 
@@ -219,6 +247,7 @@ int tree_read_from_file(Tree *tree, const char *filename){
 	assert(tree);
 
 	char *buffer = tree_create_text_buffer(filename);
+//	fprintf(tree->log_file, "\ntree_read_from_file\n");
 
 	if(!buffer){
 		printf("Error: tree_read_from_file\n");
@@ -227,14 +256,8 @@ int tree_read_from_file(Tree *tree, const char *filename){
 	int pos = 0;
 
 	tree->root = tree_read_node(tree->root, buffer, &pos);
-	//...........................^^.......and assert in create_node//
 	free(buffer);
-/*
-	if(!tree->root){
-		printf("Error: tree_read_from_file\n");
-		return 2;
-	}
-*/
+
 	return 0;
 }
 
