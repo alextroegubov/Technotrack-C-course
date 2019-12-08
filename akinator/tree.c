@@ -220,7 +220,7 @@ Node *tree_read_node(Node *parent, char *buffer, int *pos){
 	Node *new_node = NULL;
 
 	if(buffer[(*pos)++] != '('){
-		printf("Error: tree_read_node: wrong symbol");
+//		printf("Error: tree_read_node: wrong symbol\n");
 		return NULL;
 	}
 	else if(buffer[*pos] == '#'){
@@ -229,7 +229,7 @@ Node *tree_read_node(Node *parent, char *buffer, int *pos){
 	}
 	else{ 
 		char data[MAX_DATA_SIZE] = {'\0'};
-		sscanf(buffer + *pos, "%[0-9 a-z A-Z _ . , ](", data);
+		sscanf(buffer + *pos, "%[0-9 а-я А-Я _ . , ](", data);
 		*pos = *pos + strlen(data);
 
 		new_node = tree_create_node(parent, data);
@@ -267,8 +267,10 @@ char *tree_create_text_buffer(const char *filename){
 	int nsym = 0;
 	FILE *file = fopen(filename, "r");
 
-	if(!file) 
+	if(!file){
+		printf("Can't open file");
 		return NULL;
+	}
 
 	if (fseek(file, 0, SEEK_END)){
 		fclose(file);

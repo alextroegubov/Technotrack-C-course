@@ -1,1 +1,1 @@
-(animal(crocodile(#)(#))(blue(pen(#)(#))(window(#)(#))))
+(animal(crocodile(#)(#))(window(#)(#)))
