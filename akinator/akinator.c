@@ -5,7 +5,7 @@
 #include "akinator.h"
 
 #define ANS_SZ 100
-#define ANS_STR "%100[0-9   a-z A-Z _ , . ]"
+#define ANS_STR " %100[0-9   a-z A-Z _ , . ]"
 
 int akinator_add_root(Tree *tree, char *question, char *yes_answer, char *no_answer){
 	assert(tree);
@@ -33,7 +33,6 @@ Tree *akinator_create(const char *filename){
 		printf("Error: akinator_create: no tree\n");
 
 	tree_read_from_file(tree, filename);
-
 	
 	if(tree->root == NULL){
 		if(akinator_add_root(tree, "animal", "crocodile", "window") != 0){
@@ -42,6 +41,7 @@ Tree *akinator_create(const char *filename){
 			return NULL;
 		}
 	}
+
 	return tree;
 }
 

@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "tree.h"
 
 int create_log_file(const char *filename){
@@ -28,8 +29,6 @@ Tree *tree_create(/*const char *log_file_name, */const char *general_log_file){
 		return NULL;
 
 	tree->general_log_file = general_log_file;
-//	tree->hash = tree_hash(tree);
-
 	return tree;
 }
 
@@ -165,6 +164,15 @@ int tree_print_node_graph(Node *node){
 }
 
 int time_stamp(FILE *file){
+
+	time_t my_time = time(NULL);
+	struct tm res_time = {0};
+	localtime_r(&my_time, &res_time);
+
+	char stamp[30] = {'\0'};
+	strftime(stamp, 30, "%H:%M %a %d.%m.%y", &res_time);
+
+	fprintf(file, "%s\n", stamp);
 	return 0;
 }
 
@@ -216,29 +224,30 @@ int _tree_save(Node *node){
 Node *tree_read_node(Node *parent, char *buffer, int *pos){
 	assert(buffer);
 	assert(pos);
-	
+
 	Node *new_node = NULL;
 
 	if(buffer[(*pos)++] != '('){
-//		printf("Error: tree_read_node: wrong symbol\n");
+		printf("Error: tree_read_node: wrong symbol\n");
 		return NULL;
 	}
 	else if(buffer[*pos] == '#'){
 		*pos += 2;
 		return NULL;
 	}
-	else{ 
+	else{
+
 		char data[MAX_DATA_SIZE] = {'\0'};
-		sscanf(buffer + *pos, "%[0-9 а-я А-Я _ . , ](", data);
+		sscanf(buffer + *pos, "%[0-9 a-z A-Z _ . , ](", data);
 		*pos = *pos + strlen(data);
 
 		new_node = tree_create_node(parent, data);
 		new_node->left = tree_read_node(new_node, buffer, pos);
 		new_node->right = tree_read_node(new_node, buffer, pos);	
 		(*pos)++;
+
+		return new_node;
 	}
-	
-	return new_node;
 }
 
 
@@ -247,7 +256,6 @@ int tree_read_from_file(Tree *tree, const char *filename){
 	assert(tree);
 
 	char *buffer = tree_create_text_buffer(filename);
-//	fprintf(tree->log_file, "\ntree_read_from_file\n");
 
 	if(!buffer){
 		printf("Error: tree_read_from_file\n");
@@ -256,6 +264,7 @@ int tree_read_from_file(Tree *tree, const char *filename){
 	int pos = 0;
 
 	tree->root = tree_read_node(tree->root, buffer, &pos);
+
 	free(buffer);
 
 	return 0;

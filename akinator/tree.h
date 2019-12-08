@@ -1,7 +1,6 @@
 #ifndef TREE_H
 
 #define TREE_H
-
 #define MAX_DATA_SIZE 100
 
 static FILE *_tree_file_ = NULL;

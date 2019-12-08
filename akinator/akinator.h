@@ -1,7 +1,6 @@
 #ifndef AKINATOR_H
 
 #define AKINATOR_H
-
 Tree *akinator_create(const char *filename);
 
 int akinator(const char *filename);
