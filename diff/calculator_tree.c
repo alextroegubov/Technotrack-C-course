@@ -29,21 +29,21 @@ EX_: {13^2 + 6, 44}
 
 grammatic rules:
 
-G ::= E#
+G ::= F#
+
+F ::= cos(E) | sin(E) | E
+
 
 E ::= T {[+ -]T}*
 
-T ::= F {[/ *]F}* 
-
-F ::= cos(W) | sin(W) | W
+T ::= W {[/ *]W}* 
 
 W :: = P{^P}?
 
-P ::= (E) | N | V
+
+P ::= (E) | F |N | V 
 
 V ::= [A-Z]
-
-/////D ::= N {. N}?
 
 N ::= [0-9]+
 
@@ -55,10 +55,41 @@ Node *get_G(char *str){
 	
 	s = str;
 
-	Node *val = get_E();
+	Node *val = get_F();
 	assert(*s == '\0');
 
 	return val;
+}
+
+Node *get_F(){
+	Node *val1 = NULL;
+
+	if((*s == 's' && *(s+1) == 'i' && *(s+2) == 'n' && *(s+3) == '(') ||
+		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's' && *(s+3) == '(')){
+		char op = *s;
+		s += 4;
+		Node *val2 = get_E();
+		assert(*s == ')');
+		s++;
+
+		if(op == 's'){
+			val1 = create_node(FUNC);
+			val1->left = val2;
+			val1->right = NULL;
+			((Info_func*)(val1->info))->func = SIN;
+		}
+		else{
+			val1 = create_node(FUNC);
+			val1->left = val2;
+			val1->right = NULL;
+			((Info_func*)(val1->info))->func = COS;
+		}
+
+	}
+	else
+		val1 = get_E();
+
+	return val1;
 }
 
 Node *get_E(){
@@ -91,13 +122,13 @@ Node *get_E(){
 }
 
 Node *get_T(){
-	Node *val1 = get_F();
+	Node *val1 = get_W();
 	Node *new_node = NULL;
 
 	while(*s == '*' || *s == '/'){		
 		char op = *s;
 		s++;
-		Node *val2 = get_F();
+		Node *val2 = get_W();
 
 		if(op == '*'){
 			new_node = create_node(OP);
@@ -117,36 +148,6 @@ Node *get_T(){
 	return val1;
 }
 
-Node *get_F(){
-	Node *val1 = NULL;
-
-	if((*s == 's' && *(s+1) == 'i' && *(s+2) == 'n' && *(s+3) == '(') ||
-		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's' && *(s+3) == '(')){
-		char op = *s;
-		s += 4;
-		Node *val2 = get_W();
-		assert(*s == ')');
-		s++;
-
-		if(op == 's'){
-			val1 = create_node(FUNC);
-			val1->left = val2;
-			val1->right = NULL;
-			((Info_func*)(val1->info))->func = SIN;
-		}
-		else{
-			val1 = create_node(FUNC);
-			val1->left = val2;
-			val1->right = NULL;
-			((Info_func*)(val1->info))->func = COS;
-		}
-
-	}
-	else
-		val1 = get_W();
-
-	return val1;
-}
 
 Node *get_W(){
 	Node *val1 = get_P();
@@ -175,8 +176,10 @@ Node *get_P(){
 	}
 	else if('0' <= *s && *s <= '9')
 		return get_N();
-	else 
+	else if('A' <= *s && *s <= 'Z') 
 		return get_V();
+	else 
+		return get_F();
 }
 
 Node *get_V(){

@@ -12,12 +12,12 @@ enum op{
 	SUB,
 	DIV,
 	MUL,
+	POW
 };
 
 enum func{
 	COS,
-	SIN,
-	POW,
+	SIN
 };
 
 enum type{
