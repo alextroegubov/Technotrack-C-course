@@ -39,10 +39,10 @@ T ::= W {[/ *]W}*
 W :: = F{^F}?
 
 
-F ::= cos(P) | sin(P) | E(->P)
+F ::= cosP | sinP | P
 
 
-P ::= (E) | N | V 
+P ::= (E) | N | V | F
 
 V ::= [A-Z]
 
@@ -65,12 +65,11 @@ Node *get_G(char *str){
 Node *get_F(){
 	Node *val1 = NULL;
 
-	if((*s == 's' && *(s+1) == 'i' && *(s+2) == 'n' && *(s+3) == '(') ||
-		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's' && *(s+3) == '(')){
+	if((*s == 's' && *(s+1) == 'i' && *(s+2) == 'n') ||
+		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's')){
 		char op = *s;
-		s += 4;
+		s += 3;
 		Node *val2 = get_P();
-		assert(*s == ')');
 		s++;
 
 		if(op == 's'){
@@ -177,10 +176,10 @@ Node *get_P(){
 	}
 	else if('0' <= *s && *s <= '9')
 		return get_N();
-	else //if('A' <= *s && *s <= 'Z') 
+	else if('A' <= *s && *s <= 'Z') 
 		return get_V();
-//	else 
-//		return get_F();
+	else 
+		return get_F();
 }
 
 Node *get_V(){
