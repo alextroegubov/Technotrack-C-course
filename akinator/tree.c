@@ -111,7 +111,6 @@ int tree_free_node(Node *node){
 	node->left = NULL;
 	node->right = NULL;
 	free(node);
-	node = NULL;
 
 	return 0;
 }
@@ -155,10 +154,10 @@ int tree_print_node_graph(Node *node){
 	fprintf(_tree_file_, "%lu[label = \"%s\"]\n", (unsigned long int)node, node->data);
 
 	if(node->left)
-		fprintf(_tree_file_, "%lu->%lu;\n", (unsigned long int)node, (unsigned long int)node->left);
+		fprintf(_tree_file_, "%lu:sw -> %lu;\n", (unsigned long int)node, (unsigned long int)node->left);
 
 	if(node->right)
-		fprintf(_tree_file_, "%lu->%lu;\n", (unsigned long int)node, (unsigned long int)node->right);
+		fprintf(_tree_file_, "%lu:se -> %lu;\n", (unsigned long int)node, (unsigned long int)node->right);
 
 	return 0;
 }
@@ -176,11 +175,10 @@ int time_stamp(FILE *file){
 	return 0;
 }
 
-int tree_save_general(Tree *tree, const char *filename){
+int tree_save_general(Tree *tree){
 	assert(tree);
-	assert(filename);
 
-	_tree_file_ = fopen(filename, "a");	
+	_tree_file_ = fopen(tree->general_log_file, "a");	
 	time_stamp(_tree_file_);
 	_tree_save(tree->root);
 	

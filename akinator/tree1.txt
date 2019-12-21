@@ -1,1 +1,1 @@
-(animal(very big(elephant(#)(#))(jumps(frog(#)(#))(crocodile(#)(#))))(place where i live(smaller than house(flat(#)(#))(house(#)(#)))(in the kitchen(table(#)(#))(window(#)(#)))))
+(animal(very big(elephant(#)(#))(jumps(frog(#)(#))(crocodile(#)(#))))(place where i live(smaller than house(flat(#)(#))(have Poltorashka(dormitory(#)(#))(house(#)(#))))(in the kitchen(table(#)(#))(window(#)(#)))))

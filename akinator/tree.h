@@ -56,6 +56,6 @@ char *tree_create_text_buffer(const char *filename);
 
 int time_stamp(FILE *file);
 
-int tree_save_general(Tree *tree, const char *filename);
+int tree_save_general(Tree *tree);
 #endif
 

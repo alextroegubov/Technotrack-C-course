@@ -1,6 +1,6 @@
 all: akinator
 	
-akinator: tree.h tree.c akinator.c akinator.h
+akinator: tree.h tree.c akinator.c
 	gcc -o akinator akinator.c tree.c -Wall
 
 graph:
