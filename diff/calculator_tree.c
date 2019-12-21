@@ -29,19 +29,20 @@ EX_: {13^2 + 6, 44}
 
 grammatic rules:
 
-G ::= F#
-
-F ::= cos(E) | sin(E) | E
+G ::= E#
 
 
 E ::= T {[+ -]T}*
 
 T ::= W {[/ *]W}* 
 
-W :: = P{^P}?
+W :: = F{^F}?
 
 
-P ::= (E) | F |N | V 
+F ::= cos(P) | sin(P) | E(->P)
+
+
+P ::= (E) | N | V 
 
 V ::= [A-Z]
 
@@ -55,7 +56,7 @@ Node *get_G(char *str){
 	
 	s = str;
 
-	Node *val = get_F();
+	Node *val = get_E();
 	assert(*s == '\0');
 
 	return val;
@@ -68,7 +69,7 @@ Node *get_F(){
 		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's' && *(s+3) == '(')){
 		char op = *s;
 		s += 4;
-		Node *val2 = get_E();
+		Node *val2 = get_P();
 		assert(*s == ')');
 		s++;
 
@@ -87,7 +88,7 @@ Node *get_F(){
 
 	}
 	else
-		val1 = get_E();
+		val1 = get_P();
 
 	return val1;
 }
@@ -150,11 +151,11 @@ Node *get_T(){
 
 
 Node *get_W(){
-	Node *val1 = get_P();
+	Node *val1 = get_F();
 
 	if(*s == '^'){
 		s++;
-		Node *val2 = get_P();		
+		Node *val2 = get_F();		
 		Node *new_node = create_node(OP);
 		new_node->left = val1;
 		new_node->right = val2;
@@ -176,10 +177,10 @@ Node *get_P(){
 	}
 	else if('0' <= *s && *s <= '9')
 		return get_N();
-	else if('A' <= *s && *s <= 'Z') 
+	else //if('A' <= *s && *s <= 'Z') 
 		return get_V();
-	else 
-		return get_F();
+//	else 
+//		return get_F();
 }
 
 Node *get_V(){
