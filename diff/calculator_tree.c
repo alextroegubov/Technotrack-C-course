@@ -31,18 +31,15 @@ grammatic rules:
 
 G ::= E#
 
-
 E ::= T {[+ -]T}*
 
 T ::= W {[/ *]W}* 
 
-W :: = F{^F}?
-
-
-F ::= cosP | sinP | P
-
+W :: = P{^P}?
 
 P ::= (E) | N | V | F
+
+F ::= cos(E) | sin(E) 
 
 V ::= [A-Z]
 
@@ -65,11 +62,12 @@ Node *get_G(char *str){
 Node *get_F(){
 	Node *val1 = NULL;
 
-	if((*s == 's' && *(s+1) == 'i' && *(s+2) == 'n') ||
-		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's')){
+	if((*s == 's' && *(s+1) == 'i' && *(s+2) == 'n' && *(s+3) == '(') ||
+		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's' && *(s+3) == '(')){
 		char op = *s;
-		s += 3;
-		Node *val2 = get_P();
+		s += 4;
+		Node *val2 = get_E();
+		assert(*s == ')');
 		s++;
 
 		if(op == 's'){
@@ -86,8 +84,8 @@ Node *get_F(){
 		}
 
 	}
-	else
-		val1 = get_P();
+//	else
+//		val1 = get_P();
 
 	return val1;
 }
@@ -150,11 +148,11 @@ Node *get_T(){
 
 
 Node *get_W(){
-	Node *val1 = get_F();
+	Node *val1 = get_P();
 
 	if(*s == '^'){
 		s++;
-		Node *val2 = get_F();		
+		Node *val2 = get_P();		
 		Node *new_node = create_node(OP);
 		new_node->left = val1;
 		new_node->right = val2;
