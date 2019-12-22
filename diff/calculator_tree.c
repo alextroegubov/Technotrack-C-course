@@ -38,7 +38,7 @@ P ::= (E) | number | var | function
 
 function ::= cos(E) | sin(E) | ln(E) | exp(E) | power
 
-power ::= P^P
+power ::= (E)^(E)
 						exp ::= P^P
 						power ::= P^number
 
@@ -187,11 +187,14 @@ Node *get_function(){
 }
 
 Node *get_power(){
-	Node *val1 = get_P();
-	assert(*s == '^');
+	assert(*(s++) == '(');
+	Node *val1 = get_E();
+	assert(*(s++) == ')');
+	assert(*(s++) == '^');
 //	if(*s == '^'){
-		s++;
-		Node *val2 = get_P();		
+	assert(*(s++) == '(');
+		Node *val2 = get_E();
+	assert(*(s++) == ')');
 		Node *new_node = create_node(FUNC);
 		new_node->left = val1;
 		new_node->right = val2;
