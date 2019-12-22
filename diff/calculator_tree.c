@@ -4,14 +4,13 @@
 #include "tree.h"
 
 Node *get_G(char *str);
-Node *get_mul_div();
+Node *get_T();
 Node *get_P();
 Node *get_number();
-Node *get_add_sub();
-Node *get_W();
+Node *get_E();
+Node *get_power();
 Node *get_function();
 Node *get_var();
-Node *get_D();
 
 int power(int e, int x){
 	int res = 1;
@@ -29,17 +28,19 @@ EX_: {13^2 + 6, 44}
 
 grammatic rules:
 
-G ::= add_sub#
+G ::= E#
 
-add_sub ::= mul_div {[+ -]mul_div}*
+E ::= T {[+ -]T}*
 
-mul_div ::= W {[/ *]W}* 
+T ::= P {[/ *]P}* 
 
-W :: = P{^P}?
+P ::= (E) | number | var | function
 
-P ::= (add_sub) | number | var | function
+function ::= cos(E) | sin(E) | ln(E) | exp(E) | power
 
-function ::= cos(add_sub) | sin(add_sub) | 
+power ::= P^P
+						exp ::= P^P
+						power ::= P^number
 
 var ::= [A-Z]
 
@@ -53,53 +54,22 @@ Node *get_G(char *str){
 	
 	s = str;
 
-	Node *val = get_add_sub();
+	Node *val = get_E();
 	assert(*s == '\0');
 
 	return val;
 }
 
-Node *get_function(){
-	Node *val1 = NULL;
+Node *get_E(){
 
-	if((*s == 's' && *(s+1) == 'i' && *(s+2) == 'n' && *(s+3) == '(') ||
-		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's' && *(s+3) == '(')){
-		char op = *s;
-		s += 4;
-		Node *val2 = get_add_sub();
-		assert(*s == ')');
-		s++;
-
-		if(op == 's'){
-			val1 = create_node(FUNC);
-			val1->left = val2;
-			val1->right = NULL;
-			((Info_func*)(val1->info))->func = SIN;
-		}
-		else{
-			val1 = create_node(FUNC);
-			val1->left = val2;
-			val1->right = NULL;
-			((Info_func*)(val1->info))->func = COS;
-		}
-
-	}
-//	else
-//		val1 = get_P();
-
-	return val1;
-}
-
-Node *get_add_sub(){
-
-	Node *val1 = get_mul_div();
+	Node *val1 = get_T();
 	Node *val2 = NULL;
 	Node *new_node = NULL;
 
 	while(*s == '+' || *s == '-'){
 		char op = *s;
 		s++;
-		val2 = get_mul_div();
+		val2 = get_T();
 
 		if(op == '+'){
 			new_node = create_node(OP);
@@ -119,14 +89,14 @@ Node *get_add_sub(){
 	return val1;
 }
 
-Node *get_mul_div(){
-	Node *val1 = get_W();
+Node *get_T(){
+	Node *val1 = get_P();
 	Node *new_node = NULL;
 
 	while(*s == '*' || *s == '/'){		
 		char op = *s;
 		s++;
-		Node *val2 = get_W();
+		Node *val2 = get_P();
 
 		if(op == '*'){
 			new_node = create_node(OP);
@@ -147,27 +117,11 @@ Node *get_mul_div(){
 }
 
 
-Node *get_W(){
-	Node *val1 = get_P();
-
-	if(*s == '^'){
-		s++;
-		Node *val2 = get_P();		
-		Node *new_node = create_node(OP);
-		new_node->left = val1;
-		new_node->right = val2;
-		((Info_op*)(new_node->info))->op = POW;
-		val1 = new_node;
-	}
-
-	return val1;
-}
-
 Node *get_P(){
 	
 	if(*s == '('){		
 		s++;
-		Node *val = get_add_sub();		
+		Node *val = get_E();		
 		assert(*s == ')');
 		s++;
 		return val;
@@ -179,6 +133,76 @@ Node *get_P(){
 	else 
 		return get_function();
 }
+
+Node *get_function(){
+	Node *val1 = NULL;
+
+	if((*s == 's' && *(s+1) == 'i' && *(s+2) == 'n' && *(s+3) == '(') ||
+		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's' && *(s+3) == '(') ||
+		(*s == 'e' && *(s+1) == 'x' && *(s+2) == 'p' && *(s+3) == '(')){
+		char op = *s;
+		s += 4;
+		Node *val2 = get_E();
+		assert(*s == ')');
+		s++;
+
+		if(op == 's'){
+			val1 = create_node(FUNC);
+			val1->left = val2;
+			val1->right = NULL;
+			((Info_func*)(val1->info))->func = SIN;
+		}
+		else if(op == 'c'){
+			val1 = create_node(FUNC);
+			val1->left = val2;
+			val1->right = NULL;
+			((Info_func*)(val1->info))->func = COS;
+		}
+		else{
+			val1 = create_node(FUNC);
+			val1->left = val2;
+			val1->right = NULL;
+			((Info_func*)(val1->info))->func = EXP;
+		}
+
+	}
+	else if( *s == 'l' && *(s+1) == 'n' && *(s+2) == '('){
+		char op = *s;
+		s += 3;
+		Node *val2 = get_E();
+		assert(*s == ')');
+		s++;
+
+		if(op == 'l'){
+			val1 = create_node(FUNC);
+			val1->left = val2;
+			val1->right = NULL;
+			((Info_func*)(val1->info))->func = LN;
+		}
+	}
+	else
+		val1 = get_power(); 
+
+	return val1;
+}
+
+Node *get_power(){
+	Node *val1 = get_P();
+	assert(*s == '^');
+//	if(*s == '^'){
+		s++;
+		Node *val2 = get_P();		
+		Node *new_node = create_node(FUNC);
+		new_node->left = val1;
+		new_node->right = val2;
+		((Info_func*)(new_node->info))->func = POWER;
+		val1 = new_node;
+//	}
+
+	return val1;
+}
+
+
 
 Node *get_var(){
 	char val = 0;
@@ -193,6 +217,7 @@ Node *get_var(){
 
 	return new_node;
 }
+
 
 Node *get_number(){
 	int val = 0;

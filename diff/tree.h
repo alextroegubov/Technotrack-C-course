@@ -11,13 +11,15 @@ enum op{
 	ADD,
 	SUB,
 	DIV,
-	MUL,
-	POW
+	MUL
 };
 
 enum func{
 	COS,
-	SIN
+	SIN,
+	POWER,
+	LN,
+	EXP
 };
 
 enum type{

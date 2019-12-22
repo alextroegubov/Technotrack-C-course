@@ -203,9 +203,6 @@ int tree_print_node_graph(Node *node){
 				case DIV:
 					PRINT_GR(node,"/");
 					break;
-				case POW:
-					PRINT_GR(node, "^");
-					break;
 			};
 			break;
 
@@ -216,6 +213,15 @@ int tree_print_node_graph(Node *node){
 					break;
 				case SIN:
 					PRINT_GR(node, "sin");
+					break;
+				case POWER:
+					PRINT_GR(node, "^");
+					break;
+				case LN:
+					PRINT_GR(node, "ln");
+					break;
+				case EXP:
+					PRINT_GR(node, "exp");
 					break;
 			};
 			break;
