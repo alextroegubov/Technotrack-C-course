@@ -4,13 +4,13 @@
 #include "tree.h"
 
 Node *get_G(char *str);
-Node *get_T();
+Node *get_mul_div();
 Node *get_P();
-Node *get_N();
-Node *get_E();
+Node *get_number();
+Node *get_add_sub();
 Node *get_W();
-Node *get_F();
-Node *get_V();
+Node *get_function();
+Node *get_var();
 Node *get_D();
 
 int power(int e, int x){
@@ -29,21 +29,21 @@ EX_: {13^2 + 6, 44}
 
 grammatic rules:
 
-G ::= E#
+G ::= add_sub#
 
-E ::= T {[+ -]T}*
+add_sub ::= mul_div {[+ -]mul_div}*
 
-T ::= W {[/ *]W}* 
+mul_div ::= W {[/ *]W}* 
 
 W :: = P{^P}?
 
-P ::= (E) | N | V | F
+P ::= (add_sub) | number | var | function
 
-F ::= cos(E) | sin(E) 
+function ::= cos(add_sub) | sin(add_sub) | 
 
-V ::= [A-Z]
+var ::= [A-Z]
 
-N ::= [0-9]+
+number ::= [0-9]+
 
 */
 
@@ -53,20 +53,20 @@ Node *get_G(char *str){
 	
 	s = str;
 
-	Node *val = get_E();
+	Node *val = get_add_sub();
 	assert(*s == '\0');
 
 	return val;
 }
 
-Node *get_F(){
+Node *get_function(){
 	Node *val1 = NULL;
 
 	if((*s == 's' && *(s+1) == 'i' && *(s+2) == 'n' && *(s+3) == '(') ||
 		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's' && *(s+3) == '(')){
 		char op = *s;
 		s += 4;
-		Node *val2 = get_E();
+		Node *val2 = get_add_sub();
 		assert(*s == ')');
 		s++;
 
@@ -90,16 +90,16 @@ Node *get_F(){
 	return val1;
 }
 
-Node *get_E(){
+Node *get_add_sub(){
 
-	Node *val1 = get_T();
+	Node *val1 = get_mul_div();
 	Node *val2 = NULL;
 	Node *new_node = NULL;
 
 	while(*s == '+' || *s == '-'){
 		char op = *s;
 		s++;
-		val2 = get_T();
+		val2 = get_mul_div();
 
 		if(op == '+'){
 			new_node = create_node(OP);
@@ -119,7 +119,7 @@ Node *get_E(){
 	return val1;
 }
 
-Node *get_T(){
+Node *get_mul_div(){
 	Node *val1 = get_W();
 	Node *new_node = NULL;
 
@@ -167,20 +167,20 @@ Node *get_P(){
 	
 	if(*s == '('){		
 		s++;
-		Node *val = get_E();		
+		Node *val = get_add_sub();		
 		assert(*s == ')');
 		s++;
 		return val;
 	}
 	else if('0' <= *s && *s <= '9')
-		return get_N();
+		return get_number();
 	else if('A' <= *s && *s <= 'Z') 
-		return get_V();
+		return get_var();
 	else 
-		return get_F();
+		return get_function();
 }
 
-Node *get_V(){
+Node *get_var(){
 	char val = 0;
 	Node *new_node = NULL;
 
@@ -194,7 +194,7 @@ Node *get_V(){
 	return new_node;
 }
 
-Node *get_N(){
+Node *get_number(){
 	int val = 0;
 	
 	do{		
