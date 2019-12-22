@@ -32,13 +32,14 @@ G ::= E#
 
 E ::= T {[+ -]T}*
 
-T ::= P {[/ *]P}* 
+T ::= power {[/ *]power}* 
+
+power ::= P{^P}?
 
 P ::= (E) | number | var | function
 
-function ::= cos(E) | sin(E) | ln(E) | exp(E) | power
+function ::= cos(E) | sin(E) | ln(E) | exp(E)
 
-power ::= (E)^(E)
 						exp ::= P^P
 						power ::= P^number
 
@@ -90,13 +91,13 @@ Node *get_E(){
 }
 
 Node *get_T(){
-	Node *val1 = get_P();
+	Node *val1 = get_power();
 	Node *new_node = NULL;
 
 	while(*s == '*' || *s == '/'){		
 		char op = *s;
 		s++;
-		Node *val2 = get_P();
+		Node *val2 = get_power();
 
 		if(op == '*'){
 			new_node = create_node(OP);
@@ -181,26 +182,22 @@ Node *get_function(){
 		}
 	}
 	else
-		val1 = get_power(); 
+		;//		val1 = get_power(); 
 
 	return val1;
 }
 
 Node *get_power(){
-	assert(*(s++) == '(');
-	Node *val1 = get_E();
-	assert(*(s++) == ')');
-	assert(*(s++) == '^');
-//	if(*s == '^'){
-	assert(*(s++) == '(');
-		Node *val2 = get_E();
-	assert(*(s++) == ')');
+	Node *val1 = get_P();
+	if(*s == '^'){
+		s++;
+		Node *val2 = get_P();
 		Node *new_node = create_node(FUNC);
 		new_node->left = val1;
 		new_node->right = val2;
 		((Info_func*)(new_node->info))->func = POWER;
 		val1 = new_node;
-//	}
+	}
 
 	return val1;
 }
