@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "tree.h"
+#include <ctype.h>
 
 Node *get_G(char *str);
 Node *get_T();
@@ -203,13 +204,12 @@ Node *get_power(){
 }
 
 
-
 Node *get_var(){
 	char val = 0;
 	Node *new_node = NULL;
 
 	if('A' <= *s && *s <= 'Z'){
-		val = *s;
+		val = tolower(*s);
 		s++;
 		new_node = create_node(VAR);
 		((Info_var*)(new_node->info))->var = val;
@@ -234,6 +234,9 @@ Node *get_number(){
 	return new_node;
 }
 
+
+
+
 int main(){
 
 	char str[100] = {'\0'};
@@ -244,6 +247,13 @@ int main(){
 	tree->root = get_G(str);
 
 	tree_save_graph(tree, "tree.dot");
+
+//	diff_tech_print(tree);
+
+	Tree *tree_diff = diff_tree(tree, 'x');
+	tree_save_graph(tree_diff, "tree_diff.dot");
+
+//	diff_tech_print(tree_diff);
 
 
 	return 0;

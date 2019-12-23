@@ -1,12 +1,6 @@
 #ifndef TREE_H
 
 #define TREE_H
-
-#define VALID_VAL 99
-//static FILE *_tree_file_ = NULL;
-//OP(enum, symb to print, code_graph)
-
-//OP(ADD, '+',
 enum op{
 	ADD,
 	SUB,
@@ -56,31 +50,7 @@ struct Info_var{
 	char var;
 };
 typedef struct Info_var Info_var;
-/*
-struct Node_op{
-	void *left;
-	void *right;
-	char type;
-	enum op data;
-};
-typedef struct Node_op Node_op;
 
-struct Node_func{
-	void *left;
-	void *right;
-	char type;
-	enum func data;
-};
-typedef struct Node_op Node_func;
-
-struct Node_n{
-	void *left;
-	void *right;
-	char type;
-	int data;
-};
-typedef struct Node_op Node_n;
-*/
 struct Tree{
 	Node *root;
 };
@@ -98,5 +68,21 @@ int tree_print_node_graph(Node *node);
 int tree_save_graph(const Tree *tree, const char *tree_image);
 int tree_save(Tree *tree, const char *filename);
 int _tree_save(Node *node);
+
+void node_tech_print_func(Node *node);
+void node_tech_print_op(Node *node);
+void node_tech_print_add(Node *node);
+void node_tech_print_sub(Node *node);
+void node_tech_print_mul(Node *node);
+void node_tech_print_div(Node *node);
+void node_tech_print(Node *node);
+void diff_tech_print(Tree *tree);
+
+Tree *diff_tree(Tree *tree, char var);
+Node *diff_node(Node *node, char var);
+Node *diff_node_op(Node *node, char var);
+Node *diff_node_func(Node *node, char var);
+Node *copy_node(Node *node);
+
 #endif
 

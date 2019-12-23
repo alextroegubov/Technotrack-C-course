@@ -1,47 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "tree.h"
-/*
-Node_op *create_node_op(enum op data){
-	Node_op *new_node = calloc(1, sizeof(Node_op));
-
-	if(!new_node){
-		printf("Error: create_node_op: can't create node!\n");
-		return NULL;
-	}	
-	new_node->data = data;
-	new_node->type = OP;
-
-	return new_node;
-}
-
-Node_op *create_node_op(enum op data){
-	Node_op *new_node = calloc(1, sizeof(Node_op));
-
-	if(!new_node){
-		printf("Error: create_node_op: can't create node!\n");
-		return NULL;
-	}	
-	new_node->data = data;
-	new_node->type = OP;
-
-	return new_node;
-}
-
-Node_op *create_node_op(enum op data){
-	Node_op *new_node = calloc(1, sizeof(Node_op));
-
-	if(!new_node){
-		printf("Error: create_node_op: can't create node!\n");
-		return NULL;
-	}	
-	new_node->data = data;
-	new_node->type = OP;
-
-	return new_node;
-}
-*/
 
 Tree *tree_create(){
 	Tree *tree = calloc(1, sizeof(Tree));
@@ -76,7 +37,9 @@ Node *create_node(enum type type){
 			break;
 		case VAR:
 			new_node->info = calloc(1, sizeof(Info_var));
+			break;
 		default:
+			printf("%d", type); 
 			printf("Error: create_node: unknown type\n");
 	}
 
@@ -242,6 +205,321 @@ int tree_print_node_graph(Node *node){
 
 	return 0;
 }
+
+#define _NUM(node, numb) \
+	node = create_node(NUM); \
+	((Info_num*)((node)->info))->num = numb;
+
+#define _OP(node, oper) \
+	node = create_node(OP); \
+	((Info_op*)((node)->info))->op = oper;
+
+#define _FUNC(node, funct) \
+	node = create_node(FUNC); \
+	((Info_func*)(node->info))->func = funct;
+
+
+Tree *diff_tree(Tree *tree, char var){
+	assert(tree);
+
+	Tree *new_tree = calloc(1, sizeof(Tree));
+
+	new_tree->root = diff_node(tree->root, var);
+
+	return new_tree;
+}
+
+Node *diff_node(Node *node, char var){
+	assert(node);
+	Node *new_node = NULL;
+
+	switch(node->type){
+		case NUM:
+			_NUM(new_node, 0);
+			break;
+		case FUNC:
+			new_node = diff_node_func(node, var);
+			break;
+		case VAR:
+			_NUM(new_node, ((Info_var*)(node->info))->var == var ? 1 : 0);
+			break;
+		case OP:
+			printf("Entered OP\n");
+			new_node = diff_node_op(node, var);
+			break;
+	}
+	return new_node;
+}
+
+Node *diff_node_op(Node *node, char var){
+	assert(node);
+	Node *new_node  = NULL;
+	Node *tmp_node = NULL;
+
+	switch(((Info_op*)(node->info))->op){
+		case ADD:
+			_OP(new_node, ADD);
+			new_node->right = diff_node(node->right, var);
+			new_node->left = diff_node(node->left, var);
+			break;
+		case SUB:
+			_OP(new_node, SUB);
+			new_node->right = diff_node(node->right, var);
+			new_node->left = diff_node(node->left, var);
+			break;
+		case MUL:
+			_OP(new_node, ADD);
+			assert(new_node);
+			_OP((new_node->left), MUL);
+			assert(new_node->left);
+			new_node->left->left = diff_node(node->left, var);
+			assert(new_node->left->left);
+			new_node->left->right = copy_node(node->right);
+			assert(new_node->left->right);
+
+			_OP((new_node->right), MUL);
+			assert(new_node->right);
+			new_node->right->left = copy_node(node->left);
+			assert(new_node->right->left);
+			new_node->right->right = diff_node(node->right, var);
+			break;
+		case DIV:
+			_OP(new_node, DIV);
+			_OP(new_node->right, MUL);
+			new_node->right->right = copy_node(node->right);
+			new_node->right->left = copy_node(node->right);
+
+			_OP(new_node->left, SUB);
+			tmp_node = new_node->left;
+
+			_OP(tmp_node->left, MUL);
+			tmp_node->left->left = diff_node(node->left, var);
+			tmp_node->left->right = copy_node(node->right);
+
+			_OP(tmp_node->right, MUL);
+			tmp_node->right->left = diff_node(node->right, var);
+			tmp_node->right->right = copy_node(node->left);
+			break;
+	}
+
+	return new_node;
+}
+
+Node *diff_node_func(Node *node, char var){
+	assert(node);
+	Node *new_node = NULL;
+	_OP(new_node, MUL);
+	Node *tmp_node = NULL;
+
+	new_node->right = diff_node(node->left, var); //except power
+
+	switch(((Info_func*)(node->info))->func){
+		case COS:
+			_OP(new_node->left, MUL);
+			tmp_node = new_node->left;
+			_NUM(tmp_node->left, -1);
+			_FUNC(tmp_node->right, SIN);
+			tmp_node->right->left = copy_node(node->left);
+			break;
+		case SIN:
+			_FUNC(new_node->left, COS);
+			new_node->left->left = copy_node(node->left);
+			break;
+		case POWER:
+			///*//*****
+			break;	
+		case LN:
+			_OP(new_node->left, DIV);
+			_NUM(new_node->left->left, 1);
+			new_node->left->right = copy_node(node->left);
+			break;
+		case EXP:
+			_FUNC(new_node->left, EXP);
+			new_node->left->left = copy_node(node->left);
+			break;
+	}
+
+	return new_node;
+}
+
+Node *copy_node(Node *node){
+	//assert(node);
+	Node *new_node = create_node(node->type);
+	switch(node->type){
+		case OP:
+			((Info_op*)(new_node->info))->op = ((Info_op*)(node->info))->op;
+			break;
+		case FUNC:
+			((Info_func*)(new_node->info))->func = ((Info_func*)(node->info))->func;
+			break;
+		case NUM:
+			((Info_num*)(new_node->info))->num = ((Info_num*)(node->info))->num;
+			break;
+		case VAR:
+			((Info_var*)(new_node->info))->var = ((Info_var*)(node->info))->var;
+			break;	
+	}
+	
+	if(node->right)
+		new_node->right = copy_node(node->right);
+	
+	if(node->left)
+		new_node->left = copy_node(node->left);
+	
+	return new_node;
+}
+#undef _NUM
+#undef _OP
+#undef _FUNC
+
+FILE* _file_tech_ = NULL;
+#define TECH(A) \
+	fprintf(_file_tech_, A)
+
+void node_tech_print_func(Node *node){
+	assert(node);
+	
+	switch(((Info_func*)(node->info))->func){
+		case COS:
+			TECH("\\cos(");
+			node_tech_print(node->left);
+			TECH(")");
+			break;
+		case SIN:
+			fprintf(_file_tech_, "\\sin(");
+			node_tech_print(node->left);
+			fprintf(_file_tech_, ")");
+			break;
+		case LN:
+			fprintf(_file_tech_, "\\ln(");
+			node_tech_print(node->left);
+			fprintf(_file_tech_, ")");
+			break;
+		case EXP:
+			fprintf(_file_tech_, "\\exp(");
+			node_tech_print(node->left);
+			fprintf(_file_tech_, ")");
+			break;
+		case POWER:
+			TECH("(");
+			node_tech_print(node->left);
+			TECH(")");
+			fprintf(_file_tech_, "^{");
+			node_tech_print(node->right);
+			fprintf(_file_tech_, "}");
+			break;
+	}
+}
+
+void node_tech_print_add(Node *node){
+	assert(node);
+	TECH("(");
+	node_tech_print(node->right);
+	TECH("+");
+	node_tech_print(node->left);
+	TECH(")");
+}
+
+void node_tech_print_sub(Node *node){
+	assert(node);
+	TECH("(");
+	node_tech_print(node->right);
+	TECH("-");
+	node_tech_print(node->left);
+	TECH(")");
+}
+
+void node_tech_print_mul(Node *node){
+	assert(node);
+	node_tech_print(node->right);
+	TECH("\\cdot");
+	node_tech_print(node->left);
+}
+
+void node_tech_print_div(Node *node){
+	assert(node);
+	TECH("\\frac{");
+	node_tech_print(node->right);
+	TECH("}{");
+	node_tech_print(node->left);
+	TECH("}");
+}
+
+void node_tech_print_op(Node *node){
+	assert(node);
+	
+	switch(((Info_op*)(node->info))->op){
+		case ADD:
+			node_tech_print_add(node);
+			break;
+		case SUB:
+			node_tech_print_sub(node);
+			break;
+		case MUL:
+			node_tech_print_mul(node);
+			break;
+		case DIV:
+			node_tech_print_div(node);
+			break;
+	}
+}
+
+void node_tech_print(Node *node){
+	assert(node);
+
+	switch(node->type){
+		case NUM:
+			fprintf(_file_tech_, "%d", ((Info_num*)(node->info))->num);
+			break;
+		case FUNC:
+			node_tech_print_func(node);
+			break;
+		case VAR:
+			fprintf(_file_tech_, "%c", tolower(((Info_var*)(node->info))->var));
+			break;
+		case OP:
+			node_tech_print_op(node);
+			break;
+	}
+}
+
+void diff_tech_print(Tree *tree){
+	assert(tree);
+	
+	FILE *file = fopen("result/result.tex", "w");
+	
+	_file_tech_ = file;
+
+	fprintf(file, 	"\\documentclass[a4paper]{article}\n"
+					"\\usepackage[T2A]{fontenc}\n"
+					"\\usepackage[utf8]{inputenc}\n"
+					"\\usepackage[english,russian]{babel}\n"
+					"\\usepackage{wrapfig}\n"
+					"\\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools}\n"
+					"\\usepackage[pdftex]{graphicx}\n"
+					"\\graphicspath{{pictures/}}\n"
+					"\\usepackage{floatflt}\n"
+					"\\DeclareGraphicsExtensions{.pdf,.png,.jpg}\n"
+					"\\usepackage[left=3cm,right=3cm,"
+					"top=3.5cm,bottom=2cm,bindingoffset=0cm]{geometry}\n"
+					"\\usepackage{wrapfig}\n"
+					"\\usepackage{float}\n"
+					"\\usepackage{graphicx}\n"
+					"\\graphicspath{{pictures/}}\n\n"
+					"\\begin{document}\n");
+	
+	TECH("$");
+	node_tech_print(tree->root);
+	TECH("$");
+
+	fprintf(file, "\\end{document}\n");
+
+	fclose(file);
+
+	system("pdflatex result/result.tex");
+}
+#undef TECH
+
 /*
 int tree_save(Tree *tree, const char *filename){
 	assert(tree);
