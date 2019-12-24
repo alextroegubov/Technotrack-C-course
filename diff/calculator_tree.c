@@ -253,7 +253,7 @@ int main(){
 	Tree *tree_diff = diff_tree(tree, 'x');
 	tree_save_graph(tree_diff, "tree_diff.dot");
 
-//	diff_tech_print(tree_diff);
+	diff_tech_print(tree_diff);
 
 
 	return 0;

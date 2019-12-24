@@ -218,6 +218,9 @@ int tree_print_node_graph(Node *node){
 	node = create_node(FUNC); \
 	((Info_func*)(node->info))->func = funct;
 
+#define _VAR(node, varl) \
+	node = create_node(VAR); \
+	(((Info_var*)(node->info))->var = varl;
 
 Tree *diff_tree(Tree *tree, char var){
 	assert(tree);
@@ -269,22 +272,18 @@ Node *diff_node_op(Node *node, char var){
 			break;
 		case MUL:
 			_OP(new_node, ADD);
-			assert(new_node);
+
 			_OP((new_node->left), MUL);
-			assert(new_node->left);
 			new_node->left->left = diff_node(node->left, var);
-			assert(new_node->left->left);
 			new_node->left->right = copy_node(node->right);
-			assert(new_node->left->right);
 
 			_OP((new_node->right), MUL);
-			assert(new_node->right);
 			new_node->right->left = copy_node(node->left);
-			assert(new_node->right->left);
 			new_node->right->right = diff_node(node->right, var);
 			break;
 		case DIV:
 			_OP(new_node, DIV);
+
 			_OP(new_node->right, MUL);
 			new_node->right->right = copy_node(node->right);
 			new_node->right->left = copy_node(node->right);
@@ -308,10 +307,12 @@ Node *diff_node_op(Node *node, char var){
 Node *diff_node_func(Node *node, char var){
 	assert(node);
 	Node *new_node = NULL;
-	_OP(new_node, MUL);
 	Node *tmp_node = NULL;
-
-	new_node->right = diff_node(node->left, var); //except power
+	
+	if(((Info_func*)(node->info))->func != POWER){
+		_OP(new_node, MUL);
+		new_node->right = diff_node(node->left, var); //except power
+	}
 
 	switch(((Info_func*)(node->info))->func){
 		case COS:
@@ -321,18 +322,54 @@ Node *diff_node_func(Node *node, char var){
 			_FUNC(tmp_node->right, SIN);
 			tmp_node->right->left = copy_node(node->left);
 			break;
+
 		case SIN:
 			_FUNC(new_node->left, COS);
 			new_node->left->left = copy_node(node->left);
 			break;
+
 		case POWER:
-			///*//*****
+			if(node->left->type == VAR && node->right->type == NUM ){
+				if(((Info_var*)(node->left->info))->var == var){
+					_OP(new_node, MUL);
+					_NUM(new_node->right, ((Info_num*)(node->right->info))->num);
+					_FUNC(new_node->left, POWER);
+					_NUM(new_node->left->right, ((Info_num*)(node->right->info))->num - 1);
+					new_node->left->left = copy_node(node->left);
+				}
+				else{
+					_NUM(new_node, 0);
+				}
+			}
+			else if(node->right->type == NUM){
+				_OP(new_node, MUL);
+				_NUM(new_node->right, ((Info_num*)(node->right->info))->num);
+				_OP(new_node->left, MUL);
+				new_node->left->right = diff_node(node->left, var);
+				_FUNC(new_node->left->left, POWER);
+				tmp_node = new_node->left->left;
+				tmp_node->left = node->left;
+				_NUM(tmp_node->right, ((Info_num*)(node->right->info))->num - 1);
+			}
+			else{
+				//f^g = exp(g*ln(f))
+				_FUNC(tmp_node, EXP);
+				_OP(tmp_node->left, MUL);
+				_FUNC(tmp_node->left->right, LN);
+				tmp_node->left->left = copy_node(node->right);
+				tmp_node->left->right->left = copy_node(node->left);
+				new_node = diff_node(tmp_node, var);
+				tree_free_node(tmp_node); //??
+
+			}
 			break;	
+
 		case LN:
 			_OP(new_node->left, DIV);
 			_NUM(new_node->left->left, 1);
 			new_node->left->right = copy_node(node->left);
 			break;
+
 		case EXP:
 			_FUNC(new_node->left, EXP);
 			new_node->left->left = copy_node(node->left);
@@ -432,16 +469,16 @@ void node_tech_print_sub(Node *node){
 void node_tech_print_mul(Node *node){
 	assert(node);
 	node_tech_print(node->right);
-	TECH("\\cdot");
+	TECH(" \\cdot ");
 	node_tech_print(node->left);
 }
 
 void node_tech_print_div(Node *node){
 	assert(node);
-	TECH("\\frac{");
-	node_tech_print(node->right);
-	TECH("}{");
+	TECH(" \\frac{");
 	node_tech_print(node->left);
+	TECH("}{");
+	node_tech_print(node->right);
 	TECH("}");
 }
 
@@ -467,9 +504,12 @@ void node_tech_print_op(Node *node){
 void node_tech_print(Node *node){
 	assert(node);
 
+	int num = 0;
+
 	switch(node->type){
 		case NUM:
-			fprintf(_file_tech_, "%d", ((Info_num*)(node->info))->num);
+			num = ((Info_num*)(node->info))->num;
+			fprintf(_file_tech_, (num > 0) ? "%d" : "(%d)", num);
 			break;
 		case FUNC:
 			node_tech_print_func(node);
@@ -516,7 +556,7 @@ void diff_tech_print(Tree *tree){
 
 	fclose(file);
 
-	system("pdflatex result/result.tex");
+//	system("pdflatex result/result.tex");
 }
 #undef TECH
 
