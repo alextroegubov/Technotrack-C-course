@@ -76,7 +76,7 @@ void node_tech_print_sub(Node *node);
 void node_tech_print_mul(Node *node);
 void node_tech_print_div(Node *node);
 void node_tech_print(Node *node);
-void diff_tech_print(Tree *tree);
+void diff_tech_print(Tree *tree, const char *filename);
 
 Tree *diff_tree(Tree *tree, char var);
 Node *diff_node(Node *node, char var);

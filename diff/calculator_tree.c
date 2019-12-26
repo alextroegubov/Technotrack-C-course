@@ -244,16 +244,14 @@ int main(){
 
 	Tree *tree = tree_create();
 	
-	tree->root = get_G(str);
+	tree->root = get_G(str, );
 
 	tree_save_graph(tree, "tree.dot");
-
-//	diff_tech_print(tree);
 
 	Tree *tree_diff = diff_tree(tree, 'x');
 	tree_save_graph(tree_diff, "tree_diff.dot");
 
-	diff_tech_print(tree_diff);
+	diff_tech_print(tree_diff, "result/result.tex");
 
 
 	return 0;

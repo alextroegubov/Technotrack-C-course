@@ -206,6 +206,39 @@ int tree_print_node_graph(Node *node){
 	return 0;
 }
 
+char diff_var = 'x';
+
+//DSL
+#define DF(node) \
+	diff_node(node, diff_var);
+
+#define CP(node)\
+	copy_node(node);
+
+#define _ADD(node, l_node, r_node) \
+	node = create_node(OP); \
+	((Info_op*)((node)->info))->op = ADD; \
+	node->right = r_node; \
+	node->left = l_node; 
+
+#define _MUL(node, l_node, r_node) \
+	node = create_node(OP); \
+	((Info_op*)((node)->info))->op = MUL; \
+	node->right = r_node; \
+	node->left = l_node; 
+
+#define _SUB(node, l_node, r_node) \
+	node = create_node(OP); \
+	((Info_op*)((node)->info))->op = SUB; \
+	node->right = r_node; \
+	node->left = l_node; 
+
+#define _DIV(node, l_node, r_node) \
+	node = create_node(OP); \
+	((Info_op*)((node)->info))->op = DIV; \
+	node->right = r_node; \
+	node->left = l_node; 
+
 #define _NUM(node, numb) \
 	node = create_node(NUM); \
 	((Info_num*)((node)->info))->num = numb;
@@ -523,10 +556,11 @@ void node_tech_print(Node *node){
 	}
 }
 
-void diff_tech_print(Tree *tree){
+
+void diff_tech_print(Tree *tree, const char *filename){
 	assert(tree);
-	
-	FILE *file = fopen("result/result.tex", "w");
+
+	FILE *file = fopen(filename, "w");
 	
 	_file_tech_ = file;
 
