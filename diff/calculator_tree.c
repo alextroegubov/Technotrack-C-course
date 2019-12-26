@@ -3,6 +3,7 @@
 #include <math.h>
 #include "tree.h"
 #include <ctype.h>
+#include <string.h>
 
 Node *get_G(char *str);
 Node *get_T();
@@ -39,10 +40,9 @@ power ::= P{^P}?
 
 P ::= (E) | number | var | function
 
-function ::= cos(E) | sin(E) | ln(E) | exp(E)
+function ::= cos(E) | sin(E) | ln(E) | exp(E) | arcsin(E) | arccos(E) | arctg(E) | tg(E)
+				| sh(E) | ch(E)
 
-						exp ::= P^P
-						power ::= P^number
 
 var ::= [A-Z]
 
@@ -72,7 +72,7 @@ Node *get_E(){
 		char op = *s;
 		s++;
 		val2 = get_T();
-
+		//SIMPLIFY
 		if(op == '+'){
 			new_node = create_node(OP);
 			new_node->left = val1;
@@ -100,20 +100,15 @@ Node *get_T(){
 		s++;
 		Node *val2 = get_power();
 
-		if(op == '*'){
-			new_node = create_node(OP);
-			new_node->left = val1;
-			new_node->right = val2;
+		new_node = create_node(OP);
+		new_node->left = val1;
+		new_node->right = val2;
+		val1 = new_node;
+
+		if(op == '*')
 			((Info_op*)(new_node->info))->op = MUL;
-			val1 = new_node;
-		}
-		else{
-			new_node = create_node(OP);
-			new_node->left = val1;
-			new_node->right = val2;
+		else
 			((Info_op*)(new_node->info))->op = DIV;
-			val1 = new_node;
-		}
 	}
 	return val1;
 }
@@ -128,7 +123,7 @@ Node *get_P(){
 		s++;
 		return val;
 	}
-	else if('0' <= *s && *s <= '9')
+	else if((*s == '-' && isdigit(*(s+1))) || isdigit(*(s)))
 		return get_number();
 	else if('A' <= *s && *s <= 'Z') 
 		return get_var();
@@ -138,53 +133,76 @@ Node *get_P(){
 
 Node *get_function(){
 	Node *val1 = NULL;
+	char str[100] = "";
+	int i = 0;
 
-	if((*s == 's' && *(s+1) == 'i' && *(s+2) == 'n' && *(s+3) == '(') ||
-		(*s == 'c' && *(s+1) == 'o' && *(s+2) == 's' && *(s+3) == '(') ||
-		(*s == 'e' && *(s+1) == 'x' && *(s+2) == 'p' && *(s+3) == '(')){
+	while(isalpha(*(s+i))){
+		str[i] = *(s+i);
+		i++;
+	}
+	str[i] = *(s+i);
+
+	if(strcmp(str, "sin(") == 0 || strcmp(str, "cos(") == 0 || strcmp(str, "exp(") == 0){
 		char op = *s;
 		s += 4;
 		Node *val2 = get_E();
 		assert(*s == ')');
 		s++;
+		
+		val1 = create_node(FUNC);
+		val1->left = val2;
 
-		if(op == 's'){
-			val1 = create_node(FUNC);
-			val1->left = val2;
-			val1->right = NULL;
+		if(op == 's') 
 			((Info_func*)(val1->info))->func = SIN;
-		}
-		else if(op == 'c'){
-			val1 = create_node(FUNC);
-			val1->left = val2;
-			val1->right = NULL;
+		else if(op == 'c')
 			((Info_func*)(val1->info))->func = COS;
-		}
-		else{
-			val1 = create_node(FUNC);
-			val1->left = val2;
-			val1->right = NULL;
+		else
 			((Info_func*)(val1->info))->func = EXP;
-		}
 
 	}
-	else if( *s == 'l' && *(s+1) == 'n' && *(s+2) == '('){
+	else if(strcmp(str, "ln(") == 0 || strcmp(str, "tg(") == 0 
+			|| strcmp(str, "sh(") == 0 || strcmp(str, "ch(") == 0){
 		char op = *s;
 		s += 3;
 		Node *val2 = get_E();
 		assert(*s == ')');
 		s++;
 
-		if(op == 'l'){
-			val1 = create_node(FUNC);
-			val1->left = val2;
-			val1->right = NULL;
-			((Info_func*)(val1->info))->func = LN;
-		}
-	}
-	else
-		;//		val1 = get_power(); 
+		val1 = create_node(FUNC);
+		val1->left = val2;
 
+		if(op == 's')
+			((Info_func*)(val1->info))->func = SH;
+		else if(op == 'c')
+			((Info_func*)(val1->info))->func = CH;
+		else if(op == 'l')
+			((Info_func*)(val1->info))->func = LN;
+		else 
+			((Info_func*)(val1->info))->func = TG;
+	}
+	else if(strcmp(str, "arcsin(") == 0 || strcmp(str, "arccos(") == 0){
+		char op = *(s+3);
+		s += 7;
+		Node *val2 = get_E();
+		assert(*s == ')');
+		s++;
+
+		val1 = create_node(FUNC);
+		val1->left = val2;
+
+		((Info_func*)(val1->info))->func = (op == 's')? ARCSIN : ARCCOS;
+	}
+	else if(strcmp(str, "arctg(") == 0){
+		s += 6;
+		Node *val2 = get_E();
+		assert(*s == ')');
+		s++;
+
+		val1 = create_node(FUNC);
+		val1->left = val2;
+		((Info_func*)(val1->info))->func = ARCTG;
+	}
+	
 	return val1;
 }
 
@@ -196,6 +214,7 @@ Node *get_power(){
 		Node *new_node = create_node(FUNC);
 		new_node->left = val1;
 		new_node->right = val2;
+
 		((Info_func*)(new_node->info))->func = POWER;
 		val1 = new_node;
 	}
@@ -221,7 +240,12 @@ Node *get_var(){
 
 Node *get_number(){
 	int val = 0;
-	
+	int sign = 0; //no sign
+
+	if(*s == '-'){
+		sign = 1;
+		s++;
+	}
 	do{		
 		val = val * 10 + *s - '0';		
 		s++;
@@ -229,7 +253,7 @@ Node *get_number(){
 	}while('0' <= *s && *s <= '9');
 
 	Node *new_node = create_node(NUM);
-	((Info_num*)(new_node->info))->num = val;
+	((Info_num*)(new_node->info))->num = sign ? -val : val;
 
 	return new_node;
 }

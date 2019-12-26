@@ -13,7 +13,13 @@ enum func{
 	SIN,
 	POWER,
 	LN,
-	EXP
+	EXP,
+	SH,
+	CH,
+	TG,
+	ARCTG,
+	ARCSIN,
+	ARCCOS
 };
 
 enum type{

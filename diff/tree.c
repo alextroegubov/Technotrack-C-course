@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 #include "tree.h"
 
 Tree *tree_create(){
@@ -141,7 +142,8 @@ int tree_save_graph(const Tree *tree, const char *tree_image){
 }
 
 #define PRINT_GR(NODE, STR) \
-	fprintf(_tree_file_, "%lu[label = \" %s\"]\n", (unsigned long)NODE, STR);
+	fprintf(_tree_file_, "%lu[label = \" %s\"]\n", (unsigned long)NODE, STR); \
+	break;
 
 int tree_print_node_graph(Node *node){
 	assert(node);
@@ -156,16 +158,12 @@ int tree_print_node_graph(Node *node){
 			switch(((Info_op*)(node->info))->op){
 				case ADD:
 					PRINT_GR(node, "+");
-					break;
 				case SUB:
 					PRINT_GR(node, "-");
-					break;
 				case MUL:
 					PRINT_GR(node, "*");
-					break;
 				case DIV:
 					PRINT_GR(node,"/");
-					break;
 			};
 			break;
 
@@ -173,19 +171,26 @@ int tree_print_node_graph(Node *node){
 			switch(((Info_func*)(node->info))->func){
 				case COS:
 					PRINT_GR(node, "cos");
-					break;
 				case SIN:
 					PRINT_GR(node, "sin");
-					break;
 				case POWER:
 					PRINT_GR(node, "^");
-					break;
 				case LN:
 					PRINT_GR(node, "ln");
-					break;
 				case EXP:
 					PRINT_GR(node, "exp");
-					break;
+				case SH:
+					PRINT_GR(node, "sh");
+				case CH:
+					PRINT_GR(node, "ch");
+				case TG:
+					PRINT_GR(node, "tg");			
+				case ARCTG:
+					PRINT_GR(node, "arctg");
+				case ARCSIN:
+					PRINT_GR(node, "arcsin");
+				case ARCCOS:
+					PRINT_GR(node, "arccos");
 			};
 			break;
 
@@ -280,23 +285,8 @@ Node *_VAR(char var){
 
 	return new_node;
 }
-/*
-#define _NUM(node, numb) \
-	node = create_node(NUM); \
-	((Info_num*)((node)->info))->num = numb;
-*/
-#define _OP(node, oper) \
-	node = create_node(OP); \
-	((Info_op*)((node)->info))->op = oper;
-/*
-#define _FUNC(node, funct) \
-	node = create_node(FUNC); \
-	((Info_func*)(node->info))->func = funct;
-*//*
-#define _VAR(node, varl) \
-	node = create_node(VAR); \
-	(((Info_var*)(node->info))->var = varl;
-*/
+
+
 Tree *diff_tree(Tree *tree, char var){
 	assert(tree);
 
@@ -309,24 +299,20 @@ Tree *diff_tree(Tree *tree, char var){
 
 Node *diff_node(Node *node, char var){
 	assert(node);
-	Node *new_node = NULL;
 
 	switch(node->type){
 		case NUM:
-			new_node = _NUM(0);
-			break;
+			return _NUM(0);
+
 		case FUNC:
-			new_node = diff_node_func(node, var);
-			break;
+			return diff_node_func(node, var);
+
 		case VAR:
-			new_node = _NUM(((Info_var*)(node->info))->var == var ? 1 : 0);
-			break;
+			return _NUM(((Info_var*)(node->info))->var == var ? 1 : 0);
+
 		case OP:
-			printf("Entered OP\n");
-			new_node = diff_node_op(node, var);
-			break;
+			return diff_node_op(node, var);
 	}
-	return new_node;
 }
 
 Node *diff_node_op(Node *node, char var){
@@ -350,71 +336,57 @@ Node *diff_node_op(Node *node, char var){
 
 Node *diff_node_func(Node *node, char var){
 	assert(node);
-	Node *new_node = NULL;
 	int tmp_num = 0;
 
 	switch(((Info_func*)(node->info))->func){
 		case COS:
-			new_node = _MUL(_NUM(-1), _MUL(_FUNC(SIN, NL), DF(NL)));
-			break;
+			return _MUL(_NUM(-1), _MUL(_FUNC(SIN, NL), DF(NL)));
 
 		case SIN:
-			new_node = _MUL(_FUNC(COS, NL), DF(NL));
-			break;
+			return _MUL(_FUNC(COS, NL), DF(NL));
 
 		case POWER:
 			if(NL->type == VAR && NR->type == NUM){
 				if(((Info_var*)(NL->info))->var == var){
 					tmp_num = ((Info_num*)(NR->info))->num;
-					new_node = _MUL(_NUM(tmp_num), _POWER(CP(NL), _NUM(tmp_num - 1)));
+					return _MUL(_NUM(tmp_num), _POWER(CP(NL), _NUM(tmp_num - 1)));
 				}
-				else{
-					new_node = _NUM(0);
-				}
+				else
+					return _NUM(0);
 			}
 			else if(NR->type == NUM){
 				tmp_num = ((Info_num*)(NR->info))->num;
-				new_node = _MUL(_NUM(tmp_num), _MUL(DF(NL), _POWER(CP(NL), _NUM(tmp_num - 1))));
-/*				_OP(new_node, MUL);
-				_NUM(new_node->right, ((Info_num*)(node->right->info))->num);
-				_OP(new_node->left, MUL);
-				new_node->left->right = diff_node(node->left, var);
-				_FUNC(new_node->left->left, POWER);
-				tmp_node = new_node->left->left;
-				tmp_node->left = node->left;
-				_NUM(tmp_node->right, ((Info_num*)(node->right->info))->num - 1);*/
+				return _MUL(_NUM(tmp_num), _MUL(DF(NL), _POWER(CP(NL), _NUM(tmp_num - 1))));
 			}
-			else{
+			else
 				//f^g = exp(g*ln(f))  
 				//??allocating
-				new_node = DF(_FUNC(EXP, _MUL(CP(NR), _FUNC(LN, CP(NL)))));				
-				
-/*				_FUNC(tmp_node, EXP);
-				_OP(tmp_node->left, MUL);
-				_FUNC(tmp_node->left->right, LN);
-				tmp_node->left->left = copy_node(node->right);
-				tmp_node->left->right->left = copy_node(node->left);
-				new_node = diff_node(tmp_node, var);
-				tree_free_node(tmp_node); //??
-*/
-			}
-			break;	
+				return  DF(_FUNC(EXP, _MUL(CP(NR), _FUNC(LN, CP(NL)))));		
 
 		case LN:
-			new_node = _MUL(DF(NL), _DIV(_NUM(1), CP(NL))); 
-/*			_OP(new_node->left, DIV);
-			_NUM(new_node->left->left, 1);
-			new_node->left->right = copy_node(node->left);
-*/			break;
-
+			return _MUL(DF(NL), _DIV(_NUM(1), CP(NL))); 
+	
 		case EXP:
-			new_node = _MUL(DF(NL), CP(node));
-/*			_FUNC(new_node->left, EXP);
-			new_node->left->left = copy_node(node->left);
-*/			break;
-	}
+			return _MUL(DF(NL), CP(node));
 
-	return new_node;
+		case SH:
+			return _MUL(DF(NL), _FUNC(CH, CP(NL)));
+
+		case CH:
+			return _MUL(DF(NL), _FUNC(SH, CP(NL)));
+
+		case TG:
+			return _MUL(DF(NL), _DIV(_NUM(1), _MUL(_FUNC(COS, CP(NL)), _FUNC(COS, CP(NL)))));
+		
+		case ARCTG:
+			return _MUL(DF(NL), _DIV(_NUM(1), _ADD(_NUM(1), _MUL(CP(NL), CP(NL)))));
+		
+		case ARCSIN: //sqrt??
+			return NULL;
+		
+		case ARCCOS: //sqrt??
+			return NULL;
+	}
 }
 
 Node *copy_node(Node *node){
@@ -444,9 +416,6 @@ Node *copy_node(Node *node){
 	
 	return new_node;
 }
-#undef _NUM
-#undef _OP
-#undef _FUNC
 
 FILE* _file_tech_ = NULL;
 #define TECH(A) \
@@ -462,27 +431,52 @@ void node_tech_print_func(Node *node){
 			TECH(")");
 			break;
 		case SIN:
-			fprintf(_file_tech_, "\\sin(");
+			TECH("\\sin(");
 			node_tech_print(node->left);
-			fprintf(_file_tech_, ")");
+			TECH(")");
 			break;
 		case LN:
-			fprintf(_file_tech_, "\\ln(");
+			TECH("\\ln(");
 			node_tech_print(node->left);
-			fprintf(_file_tech_, ")");
+			TECH(")");
 			break;
 		case EXP:
-			fprintf(_file_tech_, "\\exp(");
+			TECH("\\exp(");
 			node_tech_print(node->left);
-			fprintf(_file_tech_, ")");
+			TECH(")");
 			break;
 		case POWER:
 			TECH("(");
 			node_tech_print(node->left);
 			TECH(")");
-			fprintf(_file_tech_, "^{");
+			TECH("^{");
 			node_tech_print(node->right);
-			fprintf(_file_tech_, "}");
+			TECH("}");
+			break;
+		case SH:
+			TECH("\\sh(");
+			node_tech_print(node->left);
+			TECH(")");
+			break;
+		case CH:
+			TECH("\\ch(");
+			node_tech_print(node->left);
+			TECH(")");
+			break;
+		case TG:
+			TECH("\\tg(");
+			node_tech_print(node->left);
+			TECH(")");
+			break;
+		case ARCCOS:
+			TECH("\\arccos(");
+			node_tech_print(node->left);
+			TECH(")");
+			break;
+		case ARCSIN:
+			TECH("\\arcsin(");
+			node_tech_print(node->left);
+			TECH(")");
 			break;
 	}
 }
@@ -491,7 +485,7 @@ void node_tech_print_add(Node *node){
 	assert(node);
 	TECH("(");
 	node_tech_print(node->right);
-	TECH("+");
+	TECH("+")
 	node_tech_print(node->left);
 	TECH(")");
 }
@@ -562,6 +556,8 @@ void node_tech_print(Node *node){
 	}
 }
 
+
+////diff variable!!!!!!!!!!!!!!!!!!!!1
 
 void diff_tech_print(Tree *tree, const char *filename){
 	assert(tree);
