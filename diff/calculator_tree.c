@@ -244,7 +244,7 @@ int main(){
 
 	Tree *tree = tree_create();
 	
-	tree->root = get_G(str, );
+	tree->root = get_G(str);
 
 	tree_save_graph(tree, "tree.dot");
 

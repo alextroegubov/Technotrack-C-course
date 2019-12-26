@@ -206,55 +206,97 @@ int tree_print_node_graph(Node *node){
 	return 0;
 }
 
-char diff_var = 'x';
+char _diff_var_ = 'x';
 
 //DSL
-#define DF(node) \
-	diff_node(node, diff_var);
+#define DF(node) diff_node(node, _diff_var_)
+#define NL node->left
+#define NR node->right
+#define CP(node) copy_node(node)
 
-#define CP(node)\
-	copy_node(node);
+Node *_ADD(Node *l_node, Node *r_node){
+	Node *new_node = create_node(OP); 
+	((Info_op*)((new_node)->info))->op = ADD; 
+	new_node->right = r_node; 
+	new_node->left = l_node; 
 
-#define _ADD(node, l_node, r_node) \
-	node = create_node(OP); \
-	((Info_op*)((node)->info))->op = ADD; \
-	node->right = r_node; \
-	node->left = l_node; 
+	return new_node;
+}
 
-#define _MUL(node, l_node, r_node) \
-	node = create_node(OP); \
-	((Info_op*)((node)->info))->op = MUL; \
-	node->right = r_node; \
-	node->left = l_node; 
+Node *_SUB(Node *l_node, Node *r_node){
+	Node *new_node = create_node(OP); 
+	((Info_op*)((new_node)->info))->op = SUB; 
+	new_node->right = r_node; 
+	new_node->left = l_node; 
 
-#define _SUB(node, l_node, r_node) \
-	node = create_node(OP); \
-	((Info_op*)((node)->info))->op = SUB; \
-	node->right = r_node; \
-	node->left = l_node; 
+	return new_node;
+}
 
-#define _DIV(node, l_node, r_node) \
-	node = create_node(OP); \
-	((Info_op*)((node)->info))->op = DIV; \
-	node->right = r_node; \
-	node->left = l_node; 
+Node *_MUL(Node *l_node, Node *r_node){
+	Node *new_node = create_node(OP); 
+	((Info_op*)((new_node)->info))->op = MUL; 
+	new_node->right = r_node; 
+	new_node->left = l_node; 
 
+	return new_node;
+}
+
+Node *_DIV(Node *l_node, Node *r_node){
+	Node *new_node = create_node(OP); 
+	((Info_op*)((new_node)->info))->op = DIV; 
+	new_node->right = r_node; 
+	new_node->left = l_node; 
+
+	return new_node;
+}
+
+Node *_POWER(Node *arg_l, Node *arg_r){
+	Node *new_node = create_node(FUNC);
+	((Info_func*)((new_node)->info))->func = POWER;
+	new_node->left = copy_node(arg_l);
+	new_node->right = copy_node(arg_r);
+
+	return new_node;
+}
+
+Node *_FUNC(enum func func_name, Node *arg){
+	Node *new_node = create_node(FUNC);
+	((Info_func*)((new_node)->info))->func = func_name;
+	new_node->left = copy_node(arg);
+
+	return new_node;
+}
+
+Node *_NUM(int num){
+	Node *new_node = create_node(NUM);
+	((Info_num*)((new_node)->info))->num = num;
+
+	return new_node;
+}
+
+Node *_VAR(char var){
+	Node *new_node  = create_node(VAR);
+	((Info_var*)(new_node->info))->var = var;
+
+	return new_node;
+}
+/*
 #define _NUM(node, numb) \
 	node = create_node(NUM); \
 	((Info_num*)((node)->info))->num = numb;
-
+*/
 #define _OP(node, oper) \
 	node = create_node(OP); \
 	((Info_op*)((node)->info))->op = oper;
-
+/*
 #define _FUNC(node, funct) \
 	node = create_node(FUNC); \
 	((Info_func*)(node->info))->func = funct;
-
+*//*
 #define _VAR(node, varl) \
 	node = create_node(VAR); \
 	(((Info_var*)(node->info))->var = varl;
-
+*/
 Tree *diff_tree(Tree *tree, char var){
 	assert(tree);
 
@@ -271,13 +313,13 @@ Node *diff_node(Node *node, char var){
 
 	switch(node->type){
 		case NUM:
-			_NUM(new_node, 0);
+			new_node = _NUM(0);
 			break;
 		case FUNC:
 			new_node = diff_node_func(node, var);
 			break;
 		case VAR:
-			_NUM(new_node, ((Info_var*)(node->info))->var == var ? 1 : 0);
+			new_node = _NUM(((Info_var*)(node->info))->var == var ? 1 : 0);
 			break;
 		case OP:
 			printf("Entered OP\n");
@@ -289,124 +331,87 @@ Node *diff_node(Node *node, char var){
 
 Node *diff_node_op(Node *node, char var){
 	assert(node);
-	Node *new_node  = NULL;
-	Node *tmp_node = NULL;
 
 	switch(((Info_op*)(node->info))->op){
+
 		case ADD:
-			_OP(new_node, ADD);
-			new_node->right = diff_node(node->right, var);
-			new_node->left = diff_node(node->left, var);
-			break;
+			return _ADD(DF(NL), DF(NR));
+
 		case SUB:
-			_OP(new_node, SUB);
-			new_node->right = diff_node(node->right, var);
-			new_node->left = diff_node(node->left, var);
-			break;
+			return _SUB(DF(NL), DF(NR));
+
 		case MUL:
-			_OP(new_node, ADD);
+			return _ADD(_MUL(DF(NR), CP(NL)), _MUL(CP(NR), DF(NL)));
 
-			_OP((new_node->left), MUL);
-			new_node->left->left = diff_node(node->left, var);
-			new_node->left->right = copy_node(node->right);
-
-			_OP((new_node->right), MUL);
-			new_node->right->left = copy_node(node->left);
-			new_node->right->right = diff_node(node->right, var);
-			break;
 		case DIV:
-			_OP(new_node, DIV);
-
-			_OP(new_node->right, MUL);
-			new_node->right->right = copy_node(node->right);
-			new_node->right->left = copy_node(node->right);
-
-			_OP(new_node->left, SUB);
-			tmp_node = new_node->left;
-
-			_OP(tmp_node->left, MUL);
-			tmp_node->left->left = diff_node(node->left, var);
-			tmp_node->left->right = copy_node(node->right);
-
-			_OP(tmp_node->right, MUL);
-			tmp_node->right->left = diff_node(node->right, var);
-			tmp_node->right->right = copy_node(node->left);
-			break;
+			return _DIV(_SUB(_MUL(DF(NL), CP(NR)), _MUL(CP(NL), DF(NR))), _MUL(CP(NR), CP(NR)));
 	}
-
-	return new_node;
 }
 
 Node *diff_node_func(Node *node, char var){
 	assert(node);
 	Node *new_node = NULL;
-	Node *tmp_node = NULL;
-	
-	if(((Info_func*)(node->info))->func != POWER){
-		_OP(new_node, MUL);
-		new_node->right = diff_node(node->left, var); //except power
-	}
+	int tmp_num = 0;
 
 	switch(((Info_func*)(node->info))->func){
 		case COS:
-			_OP(new_node->left, MUL);
-			tmp_node = new_node->left;
-			_NUM(tmp_node->left, -1);
-			_FUNC(tmp_node->right, SIN);
-			tmp_node->right->left = copy_node(node->left);
+			new_node = _MUL(_NUM(-1), _MUL(_FUNC(SIN, NL), DF(NL)));
 			break;
 
 		case SIN:
-			_FUNC(new_node->left, COS);
-			new_node->left->left = copy_node(node->left);
+			new_node = _MUL(_FUNC(COS, NL), DF(NL));
 			break;
 
 		case POWER:
-			if(node->left->type == VAR && node->right->type == NUM ){
-				if(((Info_var*)(node->left->info))->var == var){
-					_OP(new_node, MUL);
-					_NUM(new_node->right, ((Info_num*)(node->right->info))->num);
-					_FUNC(new_node->left, POWER);
-					_NUM(new_node->left->right, ((Info_num*)(node->right->info))->num - 1);
-					new_node->left->left = copy_node(node->left);
+			if(NL->type == VAR && NR->type == NUM){
+				if(((Info_var*)(NL->info))->var == var){
+					tmp_num = ((Info_num*)(NR->info))->num;
+					new_node = _MUL(_NUM(tmp_num), _POWER(CP(NL), _NUM(tmp_num - 1)));
 				}
 				else{
-					_NUM(new_node, 0);
+					new_node = _NUM(0);
 				}
 			}
-			else if(node->right->type == NUM){
-				_OP(new_node, MUL);
+			else if(NR->type == NUM){
+				tmp_num = ((Info_num*)(NR->info))->num;
+				new_node = _MUL(_NUM(tmp_num), _MUL(DF(NL), _POWER(CP(NL), _NUM(tmp_num - 1))));
+/*				_OP(new_node, MUL);
 				_NUM(new_node->right, ((Info_num*)(node->right->info))->num);
 				_OP(new_node->left, MUL);
 				new_node->left->right = diff_node(node->left, var);
 				_FUNC(new_node->left->left, POWER);
 				tmp_node = new_node->left->left;
 				tmp_node->left = node->left;
-				_NUM(tmp_node->right, ((Info_num*)(node->right->info))->num - 1);
+				_NUM(tmp_node->right, ((Info_num*)(node->right->info))->num - 1);*/
 			}
 			else{
-				//f^g = exp(g*ln(f))
-				_FUNC(tmp_node, EXP);
+				//f^g = exp(g*ln(f))  
+				//??allocating
+				new_node = DF(_FUNC(EXP, _MUL(CP(NR), _FUNC(LN, CP(NL)))));				
+				
+/*				_FUNC(tmp_node, EXP);
 				_OP(tmp_node->left, MUL);
 				_FUNC(tmp_node->left->right, LN);
 				tmp_node->left->left = copy_node(node->right);
 				tmp_node->left->right->left = copy_node(node->left);
 				new_node = diff_node(tmp_node, var);
 				tree_free_node(tmp_node); //??
-
+*/
 			}
 			break;	
 
 		case LN:
-			_OP(new_node->left, DIV);
+			new_node = _MUL(DF(NL), _DIV(_NUM(1), CP(NL))); 
+/*			_OP(new_node->left, DIV);
 			_NUM(new_node->left->left, 1);
 			new_node->left->right = copy_node(node->left);
-			break;
+*/			break;
 
 		case EXP:
-			_FUNC(new_node->left, EXP);
+			new_node = _MUL(DF(NL), CP(node));
+/*			_FUNC(new_node->left, EXP);
 			new_node->left->left = copy_node(node->left);
-			break;
+*/			break;
 	}
 
 	return new_node;
@@ -415,6 +420,7 @@ Node *diff_node_func(Node *node, char var){
 Node *copy_node(Node *node){
 	//assert(node);
 	Node *new_node = create_node(node->type);
+
 	switch(node->type){
 		case OP:
 			((Info_op*)(new_node->info))->op = ((Info_op*)(node->info))->op;
