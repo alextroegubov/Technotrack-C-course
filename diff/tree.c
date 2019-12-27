@@ -417,6 +417,144 @@ Node *copy_node(Node *node){
 	return new_node;
 }
 
+char _simple_tree_ = 1;
+
+Node *simplify_node_mul(Node *node){
+	assert(node);
+	assert(node->type == OP);
+
+	int num1 = 0;
+	int num2 = 0;
+	Node *new_node = node;
+
+	if(NL->type == NUM && NR->type == NUM){
+		num1 = ((Info_num*)(NL->info))->num;
+		num2 = ((Info_num*)(NR->info))->num;
+		tree_delete_subtree(node);
+		_simple_tree_ = 0;
+		return _NUM(num1 * num2);
+	}
+	else if(NL->type == NUM){
+		num1 = ((Info_num*)(NL->info))->num;
+		if(num1 == 0){
+			tree_delete_subtree(node);
+			_simple_tree_ = 0;
+			return _NUM(0);
+		}
+		else if(num1 == 1){
+			tree_free_node(NL);
+			new_node = NR;
+			tree_free_node(node);
+			_simple_tree_ = 0;
+		}
+	}
+	else if(NR->type == NUM){
+		num2 = ((Info_num*)(NR->info))->num;
+		if(num2 == 0){
+			tree_delete_subtree(node);
+			_simple_tree_ = 0;
+			return _NUM(0);
+		}
+		else if(num2 == 1){
+			tree_free_node(NR);
+			new_node = NL;
+			tree_free_node(node);
+			_simple_tree_ = 0;
+		}
+	}
+	
+	return new_node;
+}
+
+
+
+Node *simplify_node_add_sub(Node *node){
+	assert(node);
+	assert(node->type == OP);
+
+	int num1 = 0;
+	int num2 = 0;
+	Node *new_node = node;
+
+	if(NL->type == NUM && NR->type == NUM){
+		printf("*\n");
+		num1 = ((Info_num*)(NL->info))->num;
+		num2 = ((Info_num*)(NR->info))->num;
+		tree_delete_subtree(node);
+		_simple_tree_ = 0;
+		return _NUM((((Info_op*)(node->info))->op == ADD) ? num1 + num2 : num1 - num2);
+	}
+	else if(NL->type == NUM && ((Info_num*)(NL->info))->num == 0){
+		new_node = CP(NR);
+		tree_delete_subtree(node);
+
+		printf("**\n");/*
+		tree_free_node(NL);
+		new_node = NR;
+		tree_free_node(node);
+		*/
+		_simple_tree_ = 0; 
+	}
+	else if(NR->type == NUM && ((Info_num*)(NR->info))->num == 0){
+		new_node = CP(NL);
+		tree_delete_subtree(node);
+
+		printf("***\n");/*
+		tree_free_node(NR);
+		new_node = NL;
+		tree_free_node(node);
+		*/
+		_simple_tree_ = 0;
+	}
+
+	return new_node;
+}
+
+Node *simplify_node(Node *node){
+	assert(node);
+
+	Node *new_node = node;
+
+
+	if(NL) 
+		NL = simplify_node(NL);
+	if(NR) 
+		NR = simplify_node(NR);
+
+
+	if(node->type == OP){
+		switch(((Info_op*)(node->info))->op){
+			case ADD:
+			case SUB:
+				 new_node = simplify_node_add_sub(node);
+				 break;
+
+			case DIV:
+				new_node = node;//simplify_node_div(node);
+				break;
+
+			case MUL:
+				new_node = simplify_node_mul(node);
+				break;
+		}
+	}
+	return new_node;
+}
+
+Tree *simplify_tree(Tree *tree){
+	assert(tree);
+	
+	_simple_tree_ = 0;
+
+	while(!_simple_tree_){
+		_simple_tree_ = 1;
+		tree->root = simplify_node(tree->root);
+	}
+
+	return tree;
+}
+
+
 FILE* _file_tech_ = NULL;
 #define TECH(A) \
 	fprintf(_file_tech_, A)
@@ -485,7 +623,7 @@ void node_tech_print_add(Node *node){
 	assert(node);
 	TECH("(");
 	node_tech_print(node->right);
-	TECH("+")
+	TECH("+");
 	node_tech_print(node->left);
 	TECH(")");
 }
