@@ -191,6 +191,8 @@ int tree_print_node_graph(Node *node){
 					PRINT_GR(node, "arcsin");
 				case ARCCOS:
 					PRINT_GR(node, "arccos");
+				case SQRT:
+					PRINT_GR(node, "sqrt");
 			};
 			break;
 
@@ -211,351 +213,11 @@ int tree_print_node_graph(Node *node){
 	return 0;
 }
 
-char _diff_var_ = 'x';
-
-//DSL
-#define DF(node) diff_node(node, _diff_var_)
-#define NL node->left
-#define NR node->right
-#define CP(node) copy_node(node)
-
-Node *_ADD(Node *l_node, Node *r_node){
-	Node *new_node = create_node(OP); 
-	((Info_op*)((new_node)->info))->op = ADD; 
-	new_node->right = r_node; 
-	new_node->left = l_node; 
-
-	return new_node;
-}
-
-Node *_SUB(Node *l_node, Node *r_node){
-	Node *new_node = create_node(OP); 
-	((Info_op*)((new_node)->info))->op = SUB; 
-	new_node->right = r_node; 
-	new_node->left = l_node; 
-
-	return new_node;
-}
-
-Node *_MUL(Node *l_node, Node *r_node){
-	Node *new_node = create_node(OP); 
-	((Info_op*)((new_node)->info))->op = MUL; 
-	new_node->right = r_node; 
-	new_node->left = l_node; 
-
-	return new_node;
-}
-
-Node *_DIV(Node *l_node, Node *r_node){
-	Node *new_node = create_node(OP); 
-	((Info_op*)((new_node)->info))->op = DIV; 
-	new_node->right = r_node; 
-	new_node->left = l_node; 
-
-	return new_node;
-}
-
-Node *_POWER(Node *arg_l, Node *arg_r){
-	Node *new_node = create_node(FUNC);
-	((Info_func*)((new_node)->info))->func = POWER;
-	new_node->left = copy_node(arg_l);
-	new_node->right = copy_node(arg_r);
-
-	return new_node;
-}
-
-Node *_FUNC(enum func func_name, Node *arg){
-	Node *new_node = create_node(FUNC);
-	((Info_func*)((new_node)->info))->func = func_name;
-	new_node->left = copy_node(arg);
-
-	return new_node;
-}
-
-Node *_NUM(int num){
-	Node *new_node = create_node(NUM);
-	((Info_num*)((new_node)->info))->num = num;
-
-	return new_node;
-}
-
-Node *_VAR(char var){
-	Node *new_node  = create_node(VAR);
-	((Info_var*)(new_node->info))->var = var;
-
-	return new_node;
-}
-
-
-Tree *diff_tree(Tree *tree, char var){
-	assert(tree);
-
-	Tree *new_tree = calloc(1, sizeof(Tree));
-
-	new_tree->root = diff_node(tree->root, var);
-
-	return new_tree;
-}
-
-Node *diff_node(Node *node, char var){
-	assert(node);
-
-	switch(node->type){
-		case NUM:
-			return _NUM(0);
-
-		case FUNC:
-			return diff_node_func(node, var);
-
-		case VAR:
-			return _NUM(((Info_var*)(node->info))->var == var ? 1 : 0);
-
-		case OP:
-			return diff_node_op(node, var);
-	}
-}
-
-Node *diff_node_op(Node *node, char var){
-	assert(node);
-
-	switch(((Info_op*)(node->info))->op){
-
-		case ADD:
-			return _ADD(DF(NL), DF(NR));
-
-		case SUB:
-			return _SUB(DF(NL), DF(NR));
-
-		case MUL:
-			return _ADD(_MUL(DF(NR), CP(NL)), _MUL(CP(NR), DF(NL)));
-
-		case DIV:
-			return _DIV(_SUB(_MUL(DF(NL), CP(NR)), _MUL(CP(NL), DF(NR))), _MUL(CP(NR), CP(NR)));
-	}
-}
-
-Node *diff_node_func(Node *node, char var){
-	assert(node);
-	int tmp_num = 0;
-
-	switch(((Info_func*)(node->info))->func){
-		case COS:
-			return _MUL(_NUM(-1), _MUL(_FUNC(SIN, NL), DF(NL)));
-
-		case SIN:
-			return _MUL(_FUNC(COS, NL), DF(NL));
-
-		case POWER:
-			if(NL->type == VAR && NR->type == NUM){
-				if(((Info_var*)(NL->info))->var == var){
-					tmp_num = ((Info_num*)(NR->info))->num;
-					return _MUL(_NUM(tmp_num), _POWER(CP(NL), _NUM(tmp_num - 1)));
-				}
-				else
-					return _NUM(0);
-			}
-			else if(NR->type == NUM){
-				tmp_num = ((Info_num*)(NR->info))->num;
-				return _MUL(_NUM(tmp_num), _MUL(DF(NL), _POWER(CP(NL), _NUM(tmp_num - 1))));
-			}
-			else
-				//f^g = exp(g*ln(f))  
-				//??allocating
-				return  DF(_FUNC(EXP, _MUL(CP(NR), _FUNC(LN, CP(NL)))));		
-
-		case LN:
-			return _MUL(DF(NL), _DIV(_NUM(1), CP(NL))); 
-	
-		case EXP:
-			return _MUL(DF(NL), CP(node));
-
-		case SH:
-			return _MUL(DF(NL), _FUNC(CH, CP(NL)));
-
-		case CH:
-			return _MUL(DF(NL), _FUNC(SH, CP(NL)));
-
-		case TG:
-			return _MUL(DF(NL), _DIV(_NUM(1), _MUL(_FUNC(COS, CP(NL)), _FUNC(COS, CP(NL)))));
-		
-		case ARCTG:
-			return _MUL(DF(NL), _DIV(_NUM(1), _ADD(_NUM(1), _MUL(CP(NL), CP(NL)))));
-		
-		case ARCSIN: //sqrt??
-			return NULL;
-		
-		case ARCCOS: //sqrt??
-			return NULL;
-	}
-}
-
-Node *copy_node(Node *node){
-	//assert(node);
-	Node *new_node = create_node(node->type);
-
-	switch(node->type){
-		case OP:
-			((Info_op*)(new_node->info))->op = ((Info_op*)(node->info))->op;
-			break;
-		case FUNC:
-			((Info_func*)(new_node->info))->func = ((Info_func*)(node->info))->func;
-			break;
-		case NUM:
-			((Info_num*)(new_node->info))->num = ((Info_num*)(node->info))->num;
-			break;
-		case VAR:
-			((Info_var*)(new_node->info))->var = ((Info_var*)(node->info))->var;
-			break;	
-	}
-	
-	if(node->right)
-		new_node->right = copy_node(node->right);
-	
-	if(node->left)
-		new_node->left = copy_node(node->left);
-	
-	return new_node;
-}
-
-char _simple_tree_ = 1;
-
-Node *simplify_node_mul(Node *node){
-	assert(node);
-	assert(node->type == OP);
-
-	int num1 = 0;
-	int num2 = 0;
-	Node *new_node = node;
-
-	if(NL->type == NUM && NR->type == NUM){
-		num1 = ((Info_num*)(NL->info))->num;
-		num2 = ((Info_num*)(NR->info))->num;
-		tree_delete_subtree(node);
-		_simple_tree_ = 0;
-		return _NUM(num1 * num2);
-	}
-	else if(NL->type == NUM){
-		num1 = ((Info_num*)(NL->info))->num;
-		if(num1 == 0){
-			tree_delete_subtree(node);
-			_simple_tree_ = 0;
-			return _NUM(0);
-		}
-		else if(num1 == 1){
-			tree_free_node(NL);
-			new_node = NR;
-			tree_free_node(node);
-			_simple_tree_ = 0;
-		}
-	}
-	else if(NR->type == NUM){
-		num2 = ((Info_num*)(NR->info))->num;
-		if(num2 == 0){
-			tree_delete_subtree(node);
-			_simple_tree_ = 0;
-			return _NUM(0);
-		}
-		else if(num2 == 1){
-			tree_free_node(NR);
-			new_node = NL;
-			tree_free_node(node);
-			_simple_tree_ = 0;
-		}
-	}
-	
-	return new_node;
-}
-
-
-
-Node *simplify_node_add_sub(Node *node){
-	assert(node);
-	assert(node->type == OP);
-
-	int num1 = 0;
-	int num2 = 0;
-	Node *new_node = node;
-
-	if(NL->type == NUM && NR->type == NUM){
-		printf("*\n");
-		num1 = ((Info_num*)(NL->info))->num;
-		num2 = ((Info_num*)(NR->info))->num;
-		tree_delete_subtree(node);
-		_simple_tree_ = 0;
-		return _NUM((((Info_op*)(node->info))->op == ADD) ? num1 + num2 : num1 - num2);
-	}
-	else if(NL->type == NUM && ((Info_num*)(NL->info))->num == 0){
-		new_node = CP(NR);
-		tree_delete_subtree(node);
-
-		printf("**\n");/*
-		tree_free_node(NL);
-		new_node = NR;
-		tree_free_node(node);
-		*/
-		_simple_tree_ = 0; 
-	}
-	else if(NR->type == NUM && ((Info_num*)(NR->info))->num == 0){
-		new_node = CP(NL);
-		tree_delete_subtree(node);
-
-		printf("***\n");/*
-		tree_free_node(NR);
-		new_node = NL;
-		tree_free_node(node);
-		*/
-		_simple_tree_ = 0;
-	}
-
-	return new_node;
-}
-
-Node *simplify_node(Node *node){
-	assert(node);
-
-	Node *new_node = node;
-
-
-	if(NL) 
-		NL = simplify_node(NL);
-	if(NR) 
-		NR = simplify_node(NR);
-
-
-	if(node->type == OP){
-		switch(((Info_op*)(node->info))->op){
-			case ADD:
-			case SUB:
-				 new_node = simplify_node_add_sub(node);
-				 break;
-
-			case DIV:
-				new_node = node;//simplify_node_div(node);
-				break;
-
-			case MUL:
-				new_node = simplify_node_mul(node);
-				break;
-		}
-	}
-	return new_node;
-}
-
-Tree *simplify_tree(Tree *tree){
-	assert(tree);
-	
-	_simple_tree_ = 0;
-
-	while(!_simple_tree_){
-		_simple_tree_ = 1;
-		tree->root = simplify_node(tree->root);
-	}
-
-	return tree;
-}
+#undef PRINT_GR
 
 
 FILE* _file_tech_ = NULL;
+
 #define TECH(A) \
 	fprintf(_file_tech_, A)
 
@@ -616,11 +278,17 @@ void node_tech_print_func(Node *node){
 			node_tech_print(node->left);
 			TECH(")");
 			break;
+		case SQRT:
+			TECH("\\sqrt{");
+			node_tech_print(node->left);
+			TECH("\\mathstrut}");
+			break;
 	}
 }
 
 void node_tech_print_add(Node *node){
 	assert(node);
+
 	TECH("(");
 	node_tech_print(node->right);
 	TECH("+");
@@ -630,6 +298,7 @@ void node_tech_print_add(Node *node){
 
 void node_tech_print_sub(Node *node){
 	assert(node);
+
 	TECH("(");
 	node_tech_print(node->right);
 	TECH("-");
@@ -639,6 +308,7 @@ void node_tech_print_sub(Node *node){
 
 void node_tech_print_mul(Node *node){
 	assert(node);
+
 	node_tech_print(node->right);
 	TECH(" \\cdot ");
 	node_tech_print(node->left);
@@ -646,6 +316,7 @@ void node_tech_print_mul(Node *node){
 
 void node_tech_print_div(Node *node){
 	assert(node);
+
 	TECH(" \\frac{");
 	node_tech_print(node->left);
 	TECH("}{");
@@ -695,9 +366,7 @@ void node_tech_print(Node *node){
 }
 
 
-////diff variable!!!!!!!!!!!!!!!!!!!!1
-
-void diff_tech_print(Tree *tree, const char *filename){
+void tree_tech_print(Tree *tree, const char *filename){
 	assert(tree);
 
 	FILE *file = fopen(filename, "w");
@@ -730,7 +399,6 @@ void diff_tech_print(Tree *tree, const char *filename){
 
 	fclose(file);
 
-//	system("pdflatex result/result.tex");
 }
 #undef TECH
 
@@ -825,25 +493,4 @@ char *create_text_buffer(char *filename){
 	fclose(file);
 	return buffer;
 }
-*//*
-int main(){
-
-	Tree *tree = tree_create("tree.log");
-	
-	Node *cur_node = tree->root;
-	for(int i = 0; i <= 3;){
-		cur_node->left = tree_create_node(cur_node, i++, 1);
-		cur_node->right = tree_create_node(cur_node, i++, 1);
-		cur_node = cur_node->left;
-	}
-	
-	tree_visitor_in_order(tree->root, tree_print_node);
-
-	tree_save_graph((const Tree *) tree, "tree.dot");
-
-	tree_save(tree, "tree.txt");
-
-	tree_destroy(tree);
-
-	return 0;
-}*/
+*/

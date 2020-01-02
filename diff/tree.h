@@ -19,7 +19,8 @@ enum func{
 	TG,
 	ARCTG,
 	ARCSIN,
-	ARCCOS
+	ARCCOS,
+	SQRT
 };
 
 enum type{
@@ -82,26 +83,7 @@ void node_tech_print_sub(Node *node);
 void node_tech_print_mul(Node *node);
 void node_tech_print_div(Node *node);
 void node_tech_print(Node *node);
-void diff_tech_print(Tree *tree, const char *filename);
+void tree_tech_print(Tree *tree, const char *filename);
 
-Tree *diff_tree(Tree *tree, char var);
-Node *diff_node(Node *node, char var);
-Node *diff_node_op(Node *node, char var);
-Node *diff_node_func(Node *node, char var);
-Node *copy_node(Node *node);
-
-Node *_ADD(Node *l_node, Node *r_node);
-Node *_SUB(Node *l_node, Node *r_node);
-Node *_MUL(Node *l_node, Node *r_node);
-Node *_DIV(Node *l_node, Node *r_node);
-Node *_POWER(Node *arg_l, Node *arg_r);
-Node *_FUNC(enum func func_name, Node *arg);
-Node *_NUM(int num);
-Node *_VAR(char var);
-
-Node *simplify_node(Node *node);
-Node *simplify_node_add_sub(Node *node);
-Node *simplify_node_mul(Node *node);
-Tree *simplify_tree(Tree *tree);
 #endif
 
