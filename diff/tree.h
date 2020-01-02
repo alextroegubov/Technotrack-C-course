@@ -1,6 +1,8 @@
 #ifndef TREE_H
 
 #define TREE_H
+
+#define FRAC_SZ 100.0
 enum op{
 	ADD,
 	SUB,

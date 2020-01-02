@@ -20,6 +20,7 @@ var ::= [A-Z]
 number ::= {-}?[0-9]+
 */
 
+//#define FRAC_SZ 100.0
 
 Node *get_G(char *str);
 Node *get_T();
@@ -42,7 +43,7 @@ Node *_MUL(Node *l_node, Node *r_node);
 Node *_DIV(Node *l_node, Node *r_node);
 Node *_POWER(Node *arg_l, Node *arg_r);
 Node *_FUNC(enum func func_name, Node *arg);
-Node *_NUM(int num);
+Node *_NUM(double num);
 Node *_VAR(char var);
 
 Node *simplify_node(Node *node);

@@ -83,10 +83,11 @@ Node *_FUNC(enum func func_name, Node *arg){
 	return new_node;
 }
 
-Node *_NUM(int num){
+Node *_NUM(double num){
 
 	Node *new_node = create_node(NUM);
-	((Info_num*)((new_node)->info))->num = num;
+	((Info_num*)((new_node)->info))->num = (int)(num * FRAC_SZ);
+	printf("num = %d\n", ((Info_num*)((new_node)->info))->num);
 
 	return new_node;
 }
@@ -261,20 +262,13 @@ Node *get_var(){
 
 Node *get_number(){
 
-	int val = 0;
-	int sign = 0; //no sign
+	char *endptr = NULL;
 
-	if(*s == '-'){
-		sign = 1;
-		s++;
-	}
-	do{		
-		val = val * 10 + *s - '0';		
-		s++;
+	double val = strtod(s, &endptr);
 
-	}while('0' <= *s && *s <= '9');
+	s = s + (endptr - s);
 
-	Node *new_node = _NUM(sign ? -val : val); 
+	Node *new_node = _NUM(val); 
 
 	return new_node;
 }
@@ -326,6 +320,9 @@ Node *diff_node_op(Node *node){
 			return _ADD(_MUL(DF(NR), CP(NL)), _MUL(CP(NR), DF(NL)));
 
 		case DIV:
+			if(NR->type == NUM)
+				return _DIV(DF(NL),CP(NR));
+
 			return _DIV(_SUB(_MUL(DF(NL), CP(NR)), _MUL(CP(NL), DF(NR))), _MUL(CP(NR), CP(NR)));
 	}
 }
@@ -408,7 +405,9 @@ Node *copy_node(Node *node){
 			break;
 		case VAR:
 			((Info_var*)(new_node->info))->var = ((Info_var*)(node->info))->var;
-			break;	
+			break;
+		default:
+			printf("Error: copy_node: unknown type!\n");
 	}
 	
 	if(node->right)
@@ -422,46 +421,35 @@ Node *copy_node(Node *node){
 
 char _simple_tree_ = 1;
 
-Node *simplify_node_mul(Node *node){
+Node *simplify_node_div(Node *node){
 	assert(node);
 	assert(node->type == OP);
 
-	int num1 = 0;
-	int num2 = 0;
+	double num1 = 0;
+	double num2 = 0;
 	Node *new_node = node;
 
 	if(NL->type == NUM && NR->type == NUM){
-		num1 = ((Info_num*)(NL->info))->num;
-		num2 = ((Info_num*)(NR->info))->num;
+		num1 = ((Info_num*)(NL->info))->num / FRAC_SZ;
+		num2 = ((Info_num*)(NR->info))->num / FRAC_SZ;
 		tree_delete_subtree(node);
 		_simple_tree_ = 0;
 
-		return _NUM(num1 * num2);
+		return _NUM(num1 / num2);
 	}
 	else if(NL->type == NUM){
-		num1 = ((Info_num*)(NL->info))->num;
+		num1 = ((Info_num*)(NL->info))->num / FRAC_SZ;
 
-		if(num1 == 0){
+		if(num1 == 0.0){
 			tree_delete_subtree(node);
 			_simple_tree_ = 0;
 			return _NUM(0);
-		}
-		else if(num1 == 1){
-			tree_free_node(NL);
-			new_node = NR;
-			tree_free_node(node);
-			_simple_tree_ = 0;
 		}
 	}
 	else if(NR->type == NUM){
-		num2 = ((Info_num*)(NR->info))->num;
+		num2 = ((Info_num*)(NR->info))->num / FRAC_SZ;
 
-		if(num2 == 0){
-			tree_delete_subtree(node);
-			_simple_tree_ = 0;
-			return _NUM(0);
-		}
-		else if(num2 == 1){
+		if(num2 == 1.0){
 			tree_free_node(NR);
 			new_node = NL;
 			tree_free_node(node);
@@ -472,33 +460,84 @@ Node *simplify_node_mul(Node *node){
 	return new_node;
 }
 
+Node *simplify_node_mul(Node *node){
+	assert(node);
+	assert(node->type == OP);
+
+	double num1 = 0;
+	double num2 = 0;
+	Node *new_node = node;
+
+	if(NL->type == NUM && NR->type == NUM){
+		num1 = ((Info_num*)(NL->info))->num / FRAC_SZ;
+		num2 = ((Info_num*)(NR->info))->num / FRAC_SZ;
+		tree_delete_subtree(node);
+		_simple_tree_ = 0;
+
+		return _NUM(num1 * num2);
+	}
+	else if(NL->type == NUM){
+		num1 = ((Info_num*)(NL->info))->num / FRAC_SZ;
+
+		if(num1 == 0.0){
+			tree_delete_subtree(node);
+			_simple_tree_ = 0;
+			return _NUM(0);
+		}
+		else if(num1 == 1.0){
+			tree_free_node(NL);
+			new_node = NR;
+			tree_free_node(node);
+			_simple_tree_ = 0;
+		}
+	}
+	else if(NR->type == NUM){
+		num2 = ((Info_num*)(NR->info))->num / FRAC_SZ;
+
+		if(num2 == 0.0){
+			tree_delete_subtree(node);
+			_simple_tree_ = 0;
+			return _NUM(0);
+		}
+		else if(num2 == 1.0){
+			tree_free_node(NR);
+			new_node = NL;
+			tree_free_node(node);
+			_simple_tree_ = 0;
+		}
+	}
+	
+	return new_node;
+}
+
+
 Node *simplify_node_add_sub(Node *node){
 	assert(node);
 	assert(node->type == OP);
 
-	int num1 = 0;
-	int num2 = 0;
+	double num1 = 0;
+	double num2 = 0;
 	Node *new_node = node;
 
 	enum op oper = ((Info_op*)(node->info))->op;
 
 	if(NL->type == NUM && NR->type == NUM){
-		num1 = ((Info_num*)(NL->info))->num;
-		num2 = ((Info_num*)(NR->info))->num;
+		num1 = ((Info_num*)(NL->info))->num / FRAC_SZ;
+		num2 = ((Info_num*)(NR->info))->num / FRAC_SZ;
 		tree_delete_subtree(node);
 
 		_simple_tree_ = 0;
 
 		return _NUM((oper == ADD) ? num1 + num2 : num1 - num2);
 	}
-	else if(NL->type == NUM && ((Info_num*)(NL->info))->num == 0){
+	else if(NL->type == NUM && ((Info_num*)(NL->info))->num == 0.0){
 		tree_free_node(NL);
 		new_node = (oper == ADD) ? NR : _MUL(_NUM(-1), NR);
 		tree_free_node(node);
 
 		_simple_tree_ = 0; 
 	}
-	else if(NR->type == NUM && ((Info_num*)(NR->info))->num == 0){
+	else if(NR->type == NUM && ((Info_num*)(NR->info))->num == 0.0){
 		tree_free_node(NR);
 		new_node = NL;
 		tree_free_node(node);
@@ -514,7 +553,6 @@ Node *simplify_node(Node *node){
 
 	Node *new_node = node;
 
-
 	if(NL) 
 		NL = simplify_node(NL);
 	if(NR) 
@@ -528,7 +566,7 @@ Node *simplify_node(Node *node){
 				 break;
 
 			case DIV:
-				new_node = node;//simplify_node_div(node);
+				new_node = simplify_node_div(node);
 				break;
 
 			case MUL:

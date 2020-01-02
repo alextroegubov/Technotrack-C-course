@@ -117,7 +117,6 @@ int tree_free_node(Node *node){
 	return 0;
 }
 
-
 static FILE *_tree_file_ = NULL;
 
 int tree_save_graph(const Tree *tree, const char *tree_image){
@@ -197,7 +196,7 @@ int tree_print_node_graph(Node *node){
 			break;
 
 		case NUM:
-			fprintf(_tree_file_, "%lu[label = \"%d\"]\n", (unsigned long)node, ((Info_num*)(node->info))->num);
+			fprintf(_tree_file_, "%lu[label = \"%.2lf\"]\n", (unsigned long)node, ((Info_num*)(node->info))->num / FRAC_SZ);
 			break;
 		case VAR:
 			fprintf(_tree_file_, "%lu[label = \"%c\"]\n", (unsigned long)node, ((Info_var*)(node->info))->var);
@@ -351,7 +350,7 @@ void node_tech_print(Node *node){
 	switch(node->type){
 		case NUM:
 			num = ((Info_num*)(node->info))->num;
-			fprintf(_file_tech_, (num > 0) ? "%d" : "(%d)", num);
+			fprintf(_file_tech_, (num > 0) ? "%.2lf" : "(%.2lf)", num / FRAC_SZ);
 			break;
 		case FUNC:
 			node_tech_print_func(node);
