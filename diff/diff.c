@@ -574,6 +574,54 @@ Node *simplify_node(Node *node){
 				break;
 		}
 	}
+	else if(node->type == FUNC && NL->type == NUM){
+		double num = ((Info_num*)(NL->info))->num;
+		
+		//free_node after func
+		switch(((Info_func*)(node->info))->func){
+			case COS:
+				return _NUM(cos(num));
+
+			case SIN:
+				return _NUM(sin(num));
+
+			case POWER: //fix me: move power to operations
+				if(NR->type == NUM){
+					double num2 = ((Info_num*)(NR->info))->num;
+					return _NUM(pow(num, num2));
+				}
+				return node;
+			case LN:
+				return _NUM(log(num)); 
+	
+			case EXP:
+				return _NUM(exp(num));
+
+			case SH:
+				return _NUM((exp(num) - exp(-num))/2);
+
+			case CH:
+				return _NUM((exp(num) + exp(-num))/2);
+
+			case TG:
+				return _NUM(tan(num));
+
+			case ARCTG:
+				return _NUM(atan(num));
+
+			case SQRT:
+				return _NUM(sqrt(num));
+
+			case ARCSIN:
+				return _NUM(asin(num));
+		
+			case ARCCOS:
+				return _NUM(acos(num));
+
+			default:
+				printf("Error: diff_node_func: unknown function!\n");
+		}
+	}
 	return new_node;
 }
 
