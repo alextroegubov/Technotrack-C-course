@@ -34,6 +34,7 @@ Node *get_var();
 Tree *diff_tree(Tree *tree, char var);
 Node *diff_node(Node *node);
 Node *diff_node_op(Node *node);
+Node *diff_node_op_power(Node *node)
 Node *diff_node_func(Node *node);
 Node *copy_node(Node *node);
 
@@ -49,6 +50,8 @@ Node *_VAR(char var);
 Node *simplify_node(Node *node);
 Node *simplify_node_add_sub(Node *node);
 Node *simplify_node_mul(Node *node);
+Node *simplify_node_div(Node *node);
+Node *simplify_node_power(Node *node);
 Tree *simplify_tree(Tree *tree);
 
 #endif

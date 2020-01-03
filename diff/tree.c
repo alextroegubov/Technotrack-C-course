@@ -163,6 +163,8 @@ int tree_print_node_graph(Node *node){
 					PRINT_GR(node, "*");
 				case DIV:
 					PRINT_GR(node,"/");
+				case POWER:
+					PRINT_GR(node, "^");
 			};
 			break;
 
@@ -172,8 +174,6 @@ int tree_print_node_graph(Node *node){
 					PRINT_GR(node, "cos");
 				case SIN:
 					PRINT_GR(node, "sin");
-				case POWER:
-					PRINT_GR(node, "^");
 				case LN:
 					PRINT_GR(node, "ln");
 				case EXP:
@@ -229,54 +229,61 @@ void node_tech_print_func(Node *node){
 			node_tech_print(node->left);
 			TECH(")");
 			break;
+
 		case SIN:
 			TECH("\\sin(");
 			node_tech_print(node->left);
 			TECH(")");
 			break;
+
 		case LN:
 			TECH("\\ln(");
 			node_tech_print(node->left);
 			TECH(")");
 			break;
+
 		case EXP:
 			TECH("\\exp(");
 			node_tech_print(node->left);
 			TECH(")");
 			break;
-		case POWER:
-			TECH("(");
-			node_tech_print(node->left);
-			TECH(")");
-			TECH("^{");
-			node_tech_print(node->right);
-			TECH("}");
-			break;
+
 		case SH:
 			TECH("\\sh(");
 			node_tech_print(node->left);
 			TECH(")");
 			break;
+
 		case CH:
 			TECH("\\ch(");
 			node_tech_print(node->left);
 			TECH(")");
 			break;
+
 		case TG:
 			TECH("\\tg(");
 			node_tech_print(node->left);
 			TECH(")");
 			break;
+
 		case ARCCOS:
 			TECH("\\arccos(");
 			node_tech_print(node->left);
 			TECH(")");
 			break;
+
 		case ARCSIN:
 			TECH("\\arcsin(");
 			node_tech_print(node->left);
 			TECH(")");
 			break;
+
+		case ARCTG: //check it
+			TECH("\\arctg(");
+			node_tech_print(node->left);
+			TECH(")");
+			break;
+
 		case SQRT:
 			TECH("\\sqrt{");
 			node_tech_print(node->left);
@@ -323,6 +330,17 @@ void node_tech_print_div(Node *node){
 	TECH("}");
 }
 
+void node_tech_print_power(Node *node){
+	assert(node);
+
+		TECH("(");
+		node_tech_print(node->left);
+		TECH(")");
+		TECH("^{");
+		node_tech_print(node->right);
+		TECH("}");
+}
+
 void node_tech_print_op(Node *node){
 	assert(node);
 	
@@ -330,14 +348,21 @@ void node_tech_print_op(Node *node){
 		case ADD:
 			node_tech_print_add(node);
 			break;
+
 		case SUB:
 			node_tech_print_sub(node);
 			break;
+
 		case MUL:
 			node_tech_print_mul(node);
 			break;
+
 		case DIV:
 			node_tech_print_div(node);
+			break;
+
+		case POWER:
+			node_tech_print_power(node);
 			break;
 	}
 }

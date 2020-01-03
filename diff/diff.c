@@ -65,8 +65,8 @@ Node *_POWER(Node *arg_l, Node *arg_r){
 	assert(arg_l);
 	assert(arg_r);	
 	
-	Node *new_node = create_node(FUNC);
-	((Info_func*)((new_node)->info))->func = POWER;
+	Node *new_node = create_node(OP);
+	((Info_op*)((new_node)->info))->op = POWER;
 	new_node->left = copy_node(arg_l);
 	new_node->right = copy_node(arg_r);
 
@@ -87,7 +87,6 @@ Node *_NUM(double num){
 
 	Node *new_node = create_node(NUM);
 	((Info_num*)((new_node)->info))->num = (int)(num * FRAC_SZ);
-	printf("num = %d\n", ((Info_num*)((new_node)->info))->num);
 
 	return new_node;
 }
@@ -263,11 +262,9 @@ Node *get_var(){
 Node *get_number(){
 
 	char *endptr = NULL;
-
 	double val = strtod(s, &endptr);
 
 	s = s + (endptr - s);
-
 	Node *new_node = _NUM(val); 
 
 	return new_node;
@@ -305,6 +302,26 @@ Node *diff_node(Node *node){
 	}
 }
 
+Node *diff_node_op_power(Node *node){
+	assert(node);
+
+	if(NL->type == VAR && NR->type == NUM){
+		if(((Info_var*)(NL->info))->var == _diff_var_){
+			double tmp_num = ((Info_num*)(NR->info))->num / FRAC_SZ;
+			return _MUL(_NUM(tmp_num), _POWER(CP(NL), _NUM(tmp_num - 1.0)));
+		}
+		else
+			return _NUM(0);
+		}
+	else if(NR->type == NUM){
+		double tmp_num = ((Info_num*)(NR->info))->num / FRAC_SZ;
+		return _MUL(_NUM(tmp_num), _MUL(DF(NL), _POWER(CP(NL), _NUM(tmp_num - 1.0))));
+	}
+	else
+		//f^g = exp(g*ln(f))  
+		return  DF(_FUNC(EXP, _MUL(CP(NR), _FUNC(LN, CP(NL)))));
+}
+
 Node *diff_node_op(Node *node){
 	assert(node);
 
@@ -324,6 +341,12 @@ Node *diff_node_op(Node *node){
 				return _DIV(DF(NL),CP(NR));
 
 			return _DIV(_SUB(_MUL(DF(NL), CP(NR)), _MUL(CP(NL), DF(NR))), _MUL(CP(NR), CP(NR)));
+
+		case POWER: 
+			return diff_node_op_power(node); 
+
+		default:
+			printf("Error: diff_node_op: unknown operation!\n");
 	}
 }
 
@@ -338,23 +361,6 @@ Node *diff_node_func(Node *node){
 
 		case SIN:
 			return _MUL(_FUNC(COS, NL), DF(NL));
-
-		case POWER:
-			if(NL->type == VAR && NR->type == NUM){
-				if(((Info_var*)(NL->info))->var == _diff_var_){
-					tmp_num = ((Info_num*)(NR->info))->num;
-					return _MUL(_NUM(tmp_num), _POWER(CP(NL), _NUM(tmp_num - 1)));
-				}
-				else
-					return _NUM(0);
-			}
-			else if(NR->type == NUM){
-				tmp_num = ((Info_num*)(NR->info))->num;
-				return _MUL(_NUM(tmp_num), _MUL(DF(NL), _POWER(CP(NL), _NUM(tmp_num - 1))));
-			}
-			else
-				//f^g = exp(g*ln(f))  
-				return  DF(_FUNC(EXP, _MUL(CP(NR), _FUNC(LN, CP(NL)))));		
 
 		case LN:
 			return _MUL(DF(NL), _DIV(_NUM(1), CP(NL))); 
@@ -548,10 +554,22 @@ Node *simplify_node_add_sub(Node *node){
 	return new_node;
 }
 
+Node *simplify_node_power(Node *node){
+	assert(node);
+	
+	Node *new_node = node;
+
+	if(NL->type == NUM && NR->type == NUM){
+		double num1 = ((Info_num*)(NL->info))->num;
+		double num2 = ((Info_num*)(NR->info))->num;
+		new_node = _NUM(pow(num1, num2)); 
+	}
+
+	return new_node;
+}
+
 Node *simplify_node(Node *node){
 	assert(node);
-
-	Node *new_node = node;
 
 	if(NL) 
 		NL = simplify_node(NL);
@@ -562,35 +580,31 @@ Node *simplify_node(Node *node){
 		switch(((Info_op*)(node->info))->op){
 			case ADD:
 			case SUB:
-				 new_node = simplify_node_add_sub(node);
-				 break;
+				 return simplify_node_add_sub(node);
 
 			case DIV:
-				new_node = simplify_node_div(node);
-				break;
+				return simplify_node_div(node);
 
 			case MUL:
-				new_node = simplify_node_mul(node);
-				break;
+				return simplify_node_mul(node);
+		
+			case POWER:
+				return simplify_node_power(node);
 		}
 	}
 	else if(node->type == FUNC && NL->type == NUM){
 		double num = ((Info_num*)(NL->info))->num;
+		enum func function = ((Info_func*)(node->info))->func;
 		
-		//free_node after func
-		switch(((Info_func*)(node->info))->func){
+		tree_delete_subtree(node);
+		
+		switch(function){
 			case COS:
 				return _NUM(cos(num));
 
 			case SIN:
 				return _NUM(sin(num));
 
-			case POWER: //fix me: move power to operations
-				if(NR->type == NUM){
-					double num2 = ((Info_num*)(NR->info))->num;
-					return _NUM(pow(num, num2));
-				}
-				return node;
 			case LN:
 				return _NUM(log(num)); 
 	
@@ -598,10 +612,10 @@ Node *simplify_node(Node *node){
 				return _NUM(exp(num));
 
 			case SH:
-				return _NUM((exp(num) - exp(-num))/2);
+				return _NUM((exp(num) - exp(-num)) / 2.0);
 
 			case CH:
-				return _NUM((exp(num) + exp(-num))/2);
+				return _NUM((exp(num) + exp(-num)) / 2.0);
 
 			case TG:
 				return _NUM(tan(num));
@@ -622,7 +636,7 @@ Node *simplify_node(Node *node){
 				printf("Error: diff_node_func: unknown function!\n");
 		}
 	}
-	return new_node;
+	return node;
 }
 
 Tree *simplify_tree(Tree *tree){

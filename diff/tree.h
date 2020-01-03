@@ -7,13 +7,13 @@ enum op{
 	ADD,
 	SUB,
 	DIV,
-	MUL
+	MUL,
+	POWER
 };
 
 enum func{
 	COS,
 	SIN,
-	POWER,
 	LN,
 	EXP,
 	SH,
@@ -84,6 +84,7 @@ void node_tech_print_add(Node *node);
 void node_tech_print_sub(Node *node);
 void node_tech_print_mul(Node *node);
 void node_tech_print_div(Node *node);
+void node_tech_print_power(Node *node);
 void node_tech_print(Node *node);
 void tree_tech_print(Tree *tree, const char *filename);
 
