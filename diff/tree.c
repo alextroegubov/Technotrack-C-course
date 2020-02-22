@@ -113,6 +113,7 @@ int tree_free_node(Node *node){
 	node->right = NULL;
 	free(node->info);
 	free(node);
+	node = NULL;
 
 	return 0;
 }
@@ -296,9 +297,9 @@ void node_tech_print_add(Node *node){
 	assert(node);
 
 	TECH("(");
-	node_tech_print(node->right);
-	TECH("+");
 	node_tech_print(node->left);
+	TECH("+");
+	node_tech_print(node->right);
 	TECH(")");
 }
 
@@ -306,18 +307,18 @@ void node_tech_print_sub(Node *node){
 	assert(node);
 
 	TECH("(");
-	node_tech_print(node->right);
-	TECH("-");
 	node_tech_print(node->left);
+	TECH("-");
+	node_tech_print(node->right);
 	TECH(")");
 }
 
 void node_tech_print_mul(Node *node){
 	assert(node);
 
-	node_tech_print(node->right);
-	TECH(" \\cdot ");
 	node_tech_print(node->left);
+	TECH(" \\cdot ");
+	node_tech_print(node->right);
 }
 
 void node_tech_print_div(Node *node){

@@ -67,8 +67,8 @@ Node *_POWER(Node *arg_l, Node *arg_r){
 	
 	Node *new_node = create_node(OP);
 	((Info_op*)((new_node)->info))->op = POWER;
-	new_node->left = copy_node(arg_l);
-	new_node->right = copy_node(arg_r);
+	new_node->left = arg_l;
+	new_node->right = arg_r;
 
 	return new_node;
 }
@@ -78,7 +78,7 @@ Node *_FUNC(enum func func_name, Node *arg){
 
 	Node *new_node = create_node(FUNC);
 	((Info_func*)((new_node)->info))->func = func_name;
-	new_node->left = copy_node(arg);
+	new_node->left = arg;
 
 	return new_node;
 }
@@ -317,9 +317,13 @@ Node *diff_node_op_power(Node *node){
 		double tmp_num = ((Info_num*)(NR->info))->num / FRAC_SZ;
 		return _MUL(_NUM(tmp_num), _MUL(DF(NL), _POWER(CP(NL), _NUM(tmp_num - 1.0))));
 	}
-	else
-		//f^g = exp(g*ln(f))  
-		return  DF(_FUNC(EXP, _MUL(CP(NR), _FUNC(LN, CP(NL)))));
+	else{
+		//f^g = exp(g*ln(f))
+		Node *tmp_node = _FUNC(EXP, _MUL(CP(NR), _FUNC(LN, CP(NL))));
+		Node *new_node = DF(tmp_node);
+		tree_delete_subtree(tmp_node);
+		return  new_node;
+	}
 }
 
 Node *diff_node_op(Node *node){
@@ -357,10 +361,10 @@ Node *diff_node_func(Node *node){
 
 	switch(((Info_func*)(node->info))->func){
 		case COS:
-			return _MUL(_NUM(-1), _MUL(_FUNC(SIN, NL), DF(NL)));
+			return _MUL(_NUM(-1), _MUL(_FUNC(SIN, CP(NL)), DF(NL))); //cp
 
 		case SIN:
-			return _MUL(_FUNC(COS, NL), DF(NL));
+			return _MUL(_FUNC(COS, CP(NL)), DF(NL)); //cp
 
 		case LN:
 			return _MUL(DF(NL), _DIV(_NUM(1), CP(NL))); 
@@ -381,13 +385,13 @@ Node *diff_node_func(Node *node){
 			return _MUL(DF(NL), _DIV(_NUM(1), _ADD(_NUM(1), _MUL(CP(NL), CP(NL)))));
 		
 		case SQRT:
-			return _MUL(DF(NL), _DIV(_NUM(1), _MUL(_NUM(2), _FUNC(SQRT, NL))));
+			return _MUL(DF(NL), _DIV(_NUM(1), _MUL(_NUM(2), _FUNC(SQRT, CP(NL))))); //cp
 
 		case ARCSIN:
-			return _MUL(DF(NL), _DIV(_NUM(1), _FUNC(SQRT, _ADD(_NUM(1), _POWER(NL, _NUM(2))))));
+			return _MUL(DF(NL), _DIV(_NUM(1), _FUNC(SQRT, _SUB(_NUM(1), _POWER(CP(NL), _NUM(2)))))); //cp
 		
 		case ARCCOS:
-			return _MUL(_MUL(DF(NL), _NUM(-1)), _DIV(_NUM(1), _FUNC(SQRT, _ADD(_NUM(1), _POWER(NL, _NUM(2))))));
+			return _MUL(_MUL(DF(NL), _NUM(-1)), _DIV(_NUM(1), _FUNC(SQRT, _SUB(_NUM(1), _POWER(CP(NL), _NUM(2)))))); //cp
 
 		default:
 			printf("Error: diff_node_func: unknown function!\n");

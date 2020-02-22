@@ -34,7 +34,7 @@ Node *get_var();
 Tree *diff_tree(Tree *tree, char var);
 Node *diff_node(Node *node);
 Node *diff_node_op(Node *node);
-Node *diff_node_op_power(Node *node)
+Node *diff_node_op_power(Node *node);
 Node *diff_node_func(Node *node);
 Node *copy_node(Node *node);
 
