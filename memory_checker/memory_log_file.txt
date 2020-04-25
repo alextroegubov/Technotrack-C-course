@@ -1,0 +1,6 @@
+				 MEMORY_LOG_FILE  Sun Apr 26 00:58:00 2020
+
+[0x5617875ea410] new in file: memory.cpp, int main(), #96 allocated 24 bytes
+[0x5617875ea840] new in file: memory.cpp, int main(), #99 allocated 248 bytes
+[0x5617875ea410] delete in file: memory.cpp, int main(), #104
+[0x5617875ea840] delete in file: memory.cpp, int main(), #105
