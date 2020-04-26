@@ -11,7 +11,7 @@ void* Vector::operator new(size_t size, void* place){
 }
 
 Vector::Vector(size_t n /*= 1*/):
-		buf_(new type_t [n * sizeof(*buf_)]),
+		buf_(new type_t [n]),
 		size_(0),
 		max_size_(n){
 	
@@ -20,7 +20,7 @@ Vector::Vector(size_t n /*= 1*/):
 }
 
 Vector::Vector(size_t n, type_t value):
-		buf_(new type_t [n * sizeof(*buf_)]),
+		buf_(new type_t[n]),
 		size_(n),
 		max_size_(n){
 	
@@ -29,7 +29,7 @@ Vector::Vector(size_t n, type_t value):
 }
 
 Vector::Vector(const Vector& v):
-		buf_(new type_t [v.size_ * sizeof(*buf_)]),
+		buf_(new type_t[v.size_]),
 		size_(v.size_),
 		max_size_(v.max_size_){
 	
@@ -168,11 +168,12 @@ void Vector::PushBack(const type_t& elem){
 
 void Vector::PopBack(){
 	Assert();
+
 	if(size_ == 0){
-		error_ = Vector::errors::pop_back_from_empty_vector;
+		error_ = pop_back_from_empty_vector;
 		Assert();
 	}
-	buf_[size_--] = POISON_VALUE;
+	buf_[--size_] = POISON_VALUE;
 	Assert();
 }
 void Vector::Resize(const size_t& new_size){

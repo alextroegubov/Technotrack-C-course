@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <iostream>
+#include <algorithm>
 
 /*
 	Laboratory work about constructors operator=:
@@ -30,7 +31,7 @@ struct Indent{
 void PrintArray(int* a, size_t sz){
 	std::cout << "\t\t: ";
 
-	for(int i = 0; i < sz; i++){
+	for(size_t i = 0; i < sz; i++){
 		std::cout << a[i] << " ";
 	}
 }
@@ -47,14 +48,12 @@ struct TestObj{
 	//value constructor
 	explicit TestObj(std::string new_name, int new_size = 5, int new_value = 0):
 			size_(new_size),
-			data_(new int[10]),
+			data_(new int[new_size]),
 			name_(new_name){   
 
 		$FUNCTION 
 		
-		if(new_value){
-			std::fill(data_, data_ + size_, new_value);
-		}
+		std::fill(data_, data_ + size_, new_value);
 
 		$PRINT_SPACES
 		printf("value c-r: %s[%p]\n\n", name_.c_str(), this);
@@ -66,15 +65,13 @@ struct TestObj{
 	}
 
 	//copy constructor
-	TestObj(const TestObj& test):
-			size_(test.size_),
-			data_(new int[test.size_]),
-			name_("(copy of " + test.name_ + ")"){   		
+	TestObj(const TestObj& obj):
+			size_(obj.size_),
+			data_(new int[obj.size_]),
+			name_("(copy of " + obj.name_ + ")"){   		
 		$FUNCTION
 		
-		for(int i = 0; i < size_; i++){
-			data_[i] = test.data_[i];
-		}
+		std::copy(obj.data_, obj.data_ + obj.size_, data_);
 
 	/*
 		$PRINT_SPACES
@@ -86,23 +83,14 @@ struct TestObj{
 	}
   
 	//copy operator
-	TestObj& operator=(const TestObj& test){				
+	TestObj& operator=(const TestObj& obj){				
 		$FUNCTION
 
-		size_ = test.size_;
-		new(data_) int[test.size_];
-		name_ = "(copy of " + test.name_ + ")";   
-		
-		for(int i = 0; i < size_; i++){
-			data_[i] = test.data_[i];
-		}
-	/*
+		delete[] data_;
+		new(this) TestObj(obj);
+
 		$PRINT_SPACES
-		printf("_____________sleep______________\n");
-		sleep(5u);
-	*/
-		$PRINT_SPACES
-		printf("copy c-r: %s[%p]\n\n", name_.c_str(), this);
+		printf("copy op-r: %s[%p]\n\n", name_.c_str(), this);
 
 		return *this;
 	}
@@ -156,7 +144,7 @@ TestObj operator+(const TestObj& x1, const TestObj& x2){
 
 	TestObj result("result", std::min(x1.size_, x2.size_));
 
-	for(int i = 0; i < std::min(x1.size_, x2.size_); i++)
+	for(size_t i = 0; i < std::min(x1.size_, x2.size_); i++)
 		result.data_[i] = x1.data_[i] + x2.data_[i];
 
 	result.name_ = "(" + x1.name_ + " + " + x2.name_ + ")";
@@ -203,8 +191,8 @@ TestObj Func5(const TestObj& x){
 int main(){ $FUNCTION
 
 	$DO(TestObj a("a", 5, 2);)
-	$DO(TestObj b("b", 5, 1);)
-	$DO(TestObj c("c", 5);)
+	$DO(TestObj b("b", 10, 1);)
+	$DO(TestObj c("c", 20);)
 {
 	//	(steal of (steal of (copy of b)))
 	//	$DO(c = Func1(b);)
@@ -232,13 +220,13 @@ int main(){ $FUNCTION
 	//	$DO(c = Func2(Func4(a)));
 }
 {
-	/*
-		a = b;
-		b = a;
-		a = b;
-		b = a;
-		c = b;
-	*/
+	
+//		$DO(a = b;)
+//		$DO(b = a;)
+//		$DO(a = b;)
+//		$DO(b = a;)
+//		$DO(c = b;)
+	
 }
 	printf("\n****** %s ******\n", c.name_.c_str());
 	PrintArray(c.data_, c.size_);

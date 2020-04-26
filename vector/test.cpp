@@ -84,6 +84,7 @@ void Test4(){
 	Vector v1(2, 1);
 	v1.PopBack();
 	v1.PopBack();
+	
 	ASSERT(v1.GetSize(), 0);
 }
 
